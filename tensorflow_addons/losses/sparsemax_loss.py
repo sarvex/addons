@@ -90,8 +90,7 @@ def sparsemax_loss_from_logits(
     y_true: TensorLike, logits_pred: TensorLike
 ) -> tf.Tensor:
     y_pred = sparsemax(logits_pred)
-    loss = sparsemax_loss(logits_pred, y_pred, y_true)
-    return loss
+    return sparsemax_loss(logits_pred, y_pred, y_true)
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -122,7 +121,7 @@ class SparsemaxLoss(tf.keras.losses.Loss):
         reduction: str = tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
         name: str = "sparsemax_loss",
     ):
-        if from_logits is not True:
+        if not from_logits:
             raise ValueError("from_logits must be True")
 
         super().__init__(name=name, reduction=reduction)

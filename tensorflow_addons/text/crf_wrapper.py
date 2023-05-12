@@ -58,15 +58,15 @@ class CRFModelWrapper(tf.keras.Model):
 
         if return_crf_internal:
             return outputs
-        else:
-            # outputs[0] is the crf internal, skip it
-            output_without_crf_internal = outputs[1:]
+        # outputs[0] is the crf internal, skip it
+        output_without_crf_internal = outputs[1:]
 
             # it is nicer to return a tensor instead of an one tensor list
-            if len(output_without_crf_internal) == 1:
-                return output_without_crf_internal[0]
-            else:
-                return output_without_crf_internal
+        return (
+            output_without_crf_internal[0]
+            if len(output_without_crf_internal) == 1
+            else output_without_crf_internal
+        )
 
     def compute_crf_loss(
         self, potentials, sequence_length, kernel, y, sample_weight=None
@@ -76,9 +76,7 @@ class CRFModelWrapper(tf.keras.Model):
         flat_crf_loss = -1 * crf_likelihood
         if sample_weight is not None:
             flat_crf_loss = flat_crf_loss * sample_weight
-        crf_loss = tf.reduce_mean(flat_crf_loss)
-
-        return crf_loss
+        return tf.reduce_mean(flat_crf_loss)
 
     def train_step(self, data):
         x, y, sample_weight = self.unpack_training_data(data)
@@ -98,7 +96,7 @@ class CRFModelWrapper(tf.keras.Model):
         # Return a dict mapping metric names to current value
         orig_results = {m.name: m.result() for m in self.metrics}
         crf_results = {"loss": loss, "crf_loss": crf_loss}
-        return {**orig_results, **crf_results}
+        return orig_results | crf_results
 
     def test_step(self, data):
         x, y, sample_weight = self.unpack_training_data(data)
@@ -111,10 +109,10 @@ class CRFModelWrapper(tf.keras.Model):
         loss = crf_loss + tf.reduce_sum(self.losses)
         # Update metrics (includes the metric that tracks the loss)
         self.compiled_metrics.update_state(y, decode_sequence)
-        # Return a dict mapping metric names to current value
-        results = {m.name: m.result() for m in self.metrics}
-        results.update({"loss": loss, "crf_loss": crf_loss})  # append loss
-        return results
+        return {m.name: m.result() for m in self.metrics} | {
+            "loss": loss,
+            "crf_loss": crf_loss,
+        }
 
     def get_config(self):
         base_model_config = self.base_model.get_config()

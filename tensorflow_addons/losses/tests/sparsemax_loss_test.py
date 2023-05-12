@@ -112,7 +112,7 @@ def _tf_sparsemax_loss(z, q, dtype):
     tf_loss_op = sparsemax_loss(z, tf_sparsemax_op, q)
     tf_loss_out = tf_loss_op
 
-    return tf_loss_op, tf_loss_out
+    return tf_loss_out, tf_loss_out
 
 
 @pytest.mark.parametrize("dtype", ["float32", "float64"])

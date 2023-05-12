@@ -56,7 +56,7 @@ def GetOptionValue(argv, option):
   """
 
   parser = ArgumentParser(prefix_chars='/')
-  parser.add_argument('/' + option, nargs='*', action='append')
+  parser.add_argument(f'/{option}', nargs='*', action='append')
   args, leftover = parser.parse_known_args(argv)
   if args and vars(args)[option]:
     return (sum(vars(args)[option], []), leftover)
@@ -67,8 +67,7 @@ def _update_options(nvcc_options):
     return nvcc_options
 
   update_options = { "relaxed-constexpr" : "expt-relaxed-constexpr" }
-  return [ update_options[opt] if opt in update_options else opt
-                    for opt in nvcc_options ]
+  return [update_options.get(opt, opt) for opt in nvcc_options]
 
 def GetNvccOptions(argv):
   """Collect the -nvcc_options values from argv.
@@ -88,7 +87,7 @@ def GetNvccOptions(argv):
 
   if args.nvcc_options:
     options = _update_options(sum(args.nvcc_options, []))
-    return (['--' + a for a in options], leftover)
+    return [f'--{a}' for a in options], leftover
   return ([], leftover)
 
 
@@ -105,7 +104,7 @@ def InvokeNvcc(argv, log=False):
 
   src_files = [f for f in argv if
                re.search('\.cpp$|\.cc$|\.c$|\.cxx$|\.C$', f)]
-  if len(src_files) == 0:
+  if not src_files:
     raise Error('No source files found for cuda compilation.')
 
   out_file = [ f for f in argv if f.startswith('/Fo') ]
@@ -116,18 +115,16 @@ def InvokeNvcc(argv, log=False):
   nvcc_compiler_options, argv = GetNvccOptions(argv)
 
   opt_option, argv = GetOptionValue(argv, 'O')
-  opt = ['-g', '-G']
-  if (len(opt_option) > 0 and opt_option[0] != 'd'):
-    opt = ['-O2']
-
+  opt = (['-O2'] if
+         (len(opt_option) > 0 and opt_option[0] != 'd') else ['-g', '-G'])
   include_options, argv = GetOptionValue(argv, 'I')
-  includes = ["-I " + include for include in include_options]
+  includes = [f"-I {include}" for include in include_options]
 
   defines, argv = GetOptionValue(argv, 'D')
-  defines = ['-D' + define for define in defines]
+  defines = [f'-D{define}' for define in defines]
 
   undefines, argv = GetOptionValue(argv, 'U')
-  undefines = ['-U' + define for define in undefines]
+  undefines = [f'-U{define}' for define in undefines]
 
   # The rest of the unrecongized options should be passed to host compiler
   host_compiler_options = [option for option in argv if option not in (src_files + out_file)]
@@ -137,8 +134,9 @@ def InvokeNvcc(argv, log=False):
   nvccopts = ['-D_FORCE_INLINES']
   for capability in supported_cuda_compute_capabilities:
     capability = capability.replace('.', '')
-    nvccopts += [r'-gencode=arch=compute_%s,"code=sm_%s,compute_%s"' % (
-        capability, capability, capability)]
+    nvccopts += [
+        f'-gencode=arch=compute_{capability},"code=sm_{capability},compute_{capability}"'
+    ]
   nvccopts += nvcc_compiler_options
   nvccopts += undefines
   nvccopts += defines

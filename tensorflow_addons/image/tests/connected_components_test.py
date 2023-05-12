@@ -170,7 +170,4 @@ def connected_components_reference_implementation(images):
     for i in range(components.shape[0]):
         new_id_start = positive_id_start_per_image[i - 1] if i > 0 else 0
         components[i, components[i] > 0] += new_id_start
-    if len(image_or_images.shape) == 2:
-        return components[0, :, :]
-    else:
-        return components
+    return components[0, :, :] if len(image_or_images.shape) == 2 else components

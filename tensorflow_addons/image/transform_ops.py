@@ -90,7 +90,7 @@ def transform(
             transforms, name="transforms", dtype=tf.dtypes.float32
         )
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
-            raise TypeError("Invalid dtype %s." % image_or_images.dtype)
+            raise TypeError(f"Invalid dtype {image_or_images.dtype}.")
         images = img_utils.to_4D_image(image_or_images)
         original_ndims = img_utils.get_ndims(image_or_images)
 
@@ -182,7 +182,7 @@ def flat_transforms_to_matrices(
     with tf.name_scope(name or "flat_transforms_to_matrices"):
         transforms = tf.convert_to_tensor(transforms, name="transforms")
         if transforms.shape.ndims not in (1, 2):
-            raise ValueError("Transforms should be 1D or 2D, got: %s" % transforms)
+            raise ValueError(f"Transforms should be 1D or 2D, got: {transforms}")
         # Make the transform(s) 2D in case the input is a single transform.
         transforms = tf.reshape(transforms, tf.constant([-1, 8]))
         num_transforms = tf.shape(transforms)[0]
@@ -220,9 +220,7 @@ def matrices_to_flat_transforms(
             transform_matrices, name="transform_matrices"
         )
         if transform_matrices.shape.ndims not in (2, 3):
-            raise ValueError(
-                "Matrices should be 2D or 3D, got: %s" % transform_matrices
-            )
+            raise ValueError(f"Matrices should be 2D or 3D, got: {transform_matrices}")
         # Flatten each matrix.
         transforms = tf.reshape(transform_matrices, tf.constant([-1, 9]))
         # Divide each matrix by the last entry (normally 1).
@@ -329,7 +327,7 @@ def rotate(
     with tf.name_scope(name or "rotate"):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
-            raise TypeError("Invalid dtype %s." % image_or_images.dtype)
+            raise TypeError(f"Invalid dtype {image_or_images.dtype}.")
         images = img_utils.to_4D_image(image_or_images)
         original_ndims = img_utils.get_ndims(image_or_images)
 

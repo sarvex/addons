@@ -205,8 +205,7 @@ def test_smiley_face():
             warped_image = warped_image
             out_image = np.uint8(warped_image[0, :, :, :] * 255)
             target_file = get_path_to_datafile(
-                "image/tests/test_data/Yellow_Smiley_Face_Warp-interp"
-                + "-{}-clamp-{}.png".format(interpolation_order, num_boundary_points)
+                f"image/tests/test_data/Yellow_Smiley_Face_Warp-interp-{interpolation_order}-clamp-{num_boundary_points}.png"
             )
 
             target_image = load_image(target_file)

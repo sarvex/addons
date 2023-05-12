@@ -76,37 +76,7 @@ class LazySO:
             return
 
         warnings.warn(
-            "You are currently using TensorFlow {} and trying to load a custom op ({})."
-            "\n"
-            "TensorFlow Addons has compiled its custom ops against TensorFlow {}, "
-            "and there are no compatibility guarantees between the two versions. "
-            "\n"
-            "This means that you might get segfaults when loading the custom op, "
-            "or other kind of low-level errors.\n If you do, do not file an issue "
-            "on Github. This is a known limitation."
-            "\n\n"
-            "It might help you to fallback to pure Python "
-            "ops by setting environment variable `TF_ADDONS_PY_OPS=1` or using `tfa.options.disable_custom_kernel()` in your code. "
-            "To do that, see "
-            "https://github.com/tensorflow/addons#gpucpu-custom-ops "
-            "\n\n"
-            "You can also change the TensorFlow version installed on your system. "
-            "You would need a TensorFlow version equal to or above {} and strictly "
-            "below {}.\n Note that nightly versions of TensorFlow, "
-            "as well as non-pip TensorFlow like `conda install tensorflow` or compiled "
-            "from source are not supported."
-            "\n\n"
-            "The last solution is to find the TensorFlow Addons version that has "
-            "custom ops compatible with the TensorFlow installed on your "
-            "system. To do that, refer to the readme: "
-            "https://github.com/tensorflow/addons"
-            "".format(
-                tf.__version__,
-                self.relative_path,
-                INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
-                INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
-                EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY,
-            ),
+            f"You are currently using TensorFlow {tf.__version__} and trying to load a custom op ({self.relative_path}).\nTensorFlow Addons has compiled its custom ops against TensorFlow {INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY}, and there are no compatibility guarantees between the two versions. \nThis means that you might get segfaults when loading the custom op, or other kind of low-level errors.\n If you do, do not file an issue on Github. This is a known limitation.\n\nIt might help you to fallback to pure Python ops by setting environment variable `TF_ADDONS_PY_OPS=1` or using `tfa.options.disable_custom_kernel()` in your code. To do that, see https://github.com/tensorflow/addons#gpucpu-custom-ops \n\nYou can also change the TensorFlow version installed on your system. You would need a TensorFlow version equal to or above {INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY} and strictly below {EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY}.\n Note that nightly versions of TensorFlow, as well as non-pip TensorFlow like `conda install tensorflow` or compiled from source are not supported.\n\nThe last solution is to find the TensorFlow Addons version that has custom ops compatible with the TensorFlow installed on your system. To do that, refer to the readme: https://github.com/tensorflow/addons",
             UserWarning,
         )
         abi_warning_already_raised = True

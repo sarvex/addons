@@ -120,8 +120,7 @@ class ESNCell(keras.layers.AbstractRNNCell):
         input_size = tf.compat.dimension_value(tf.TensorShape(inputs_shape)[-1])
         if input_size is None:
             raise ValueError(
-                "Could not infer input size from inputs.get_shape()[-1]. Shape received is %s"
-                % inputs_shape
+                f"Could not infer input size from inputs.get_shape()[-1]. Shape received is {inputs_shape}"
             )
 
         def _esn_recurrent_initializer(shape, dtype, partition_info=None):

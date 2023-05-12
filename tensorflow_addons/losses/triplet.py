@@ -35,13 +35,12 @@ def _masked_maximum(data, mask, dim=1):
         The maximized dimension is of size 1 after the operation.
     """
     axis_minimums = tf.math.reduce_min(data, dim, keepdims=True)
-    masked_maximums = (
+    return (
         tf.math.reduce_max(
             tf.math.multiply(data - axis_minimums, mask), dim, keepdims=True
         )
         + axis_minimums
     )
-    return masked_maximums
 
 
 def _masked_minimum(data, mask, dim=1):
@@ -57,13 +56,12 @@ def _masked_minimum(data, mask, dim=1):
         The minimized dimension is of size 1 after the operation.
     """
     axis_maximums = tf.math.reduce_max(data, dim, keepdims=True)
-    masked_minimums = (
+    return (
         tf.math.reduce_min(
             tf.math.multiply(data - axis_maximums, mask), dim, keepdims=True
         )
         + axis_maximums
     )
-    return masked_minimums
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -108,9 +106,10 @@ def triplet_semihard_loss(
     labels = tf.convert_to_tensor(y_true, name="labels")
     embeddings = tf.convert_to_tensor(y_pred, name="embeddings")
 
-    convert_to_float32 = (
-        embeddings.dtype == tf.dtypes.float16 or embeddings.dtype == tf.dtypes.bfloat16
-    )
+    convert_to_float32 = embeddings.dtype in [
+        tf.dtypes.float16,
+        tf.dtypes.bfloat16,
+    ]
     precise_embeddings = (
         tf.cast(embeddings, tf.dtypes.float32) if convert_to_float32 else embeddings
     )
@@ -245,9 +244,10 @@ def triplet_hard_loss(
     labels = tf.convert_to_tensor(y_true, name="labels")
     embeddings = tf.convert_to_tensor(y_pred, name="embeddings")
 
-    convert_to_float32 = (
-        embeddings.dtype == tf.dtypes.float16 or embeddings.dtype == tf.dtypes.bfloat16
-    )
+    convert_to_float32 = embeddings.dtype in [
+        tf.dtypes.float16,
+        tf.dtypes.bfloat16,
+    ]
     precise_embeddings = (
         tf.cast(embeddings, tf.dtypes.float32) if convert_to_float32 else embeddings
     )

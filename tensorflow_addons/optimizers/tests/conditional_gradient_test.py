@@ -24,20 +24,7 @@ from tensorflow_addons.optimizers import conditional_gradient as cg_lib
 
 
 def _dtypes_to_test(use_gpu):
-    # Based on issue #347 in the following link,
-    #        "https://github.com/tensorflow/addons/issues/347"
-    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel
-    # for 'GPU' devices.
-    # So we have to remove tf.half when testing with gpu.
-    # The function "_DtypesToTest" is from
-    #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
-    #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
-    #
-    #  Update cpu to use tf.half once issue in TF2.4 is fixed: https://github.com/tensorflow/tensorflow/issues/45136
-    if use_gpu:
-        return [tf.float32, tf.float64]
-    else:
-        return [tf.float32, tf.float64]
+    return [tf.float32, tf.float64]
 
 
 def _dtypes_with_checking_system(use_gpu, system):
@@ -317,6 +304,7 @@ def test_minimize_sparse_resource_variable_nuclear():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_tensor_learning_rate_and_conditional_gradient_nuclear():
+    ord = "nuclear"
     for dtype in _dtypes_with_checking_system(
         use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
@@ -332,7 +320,6 @@ def test_tensor_learning_rate_and_conditional_gradient_nuclear():
         grads1 = tf.constant([0.01, 0.01], dtype=dtype)
         top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(grads0)
         top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(grads1)
-        ord = "nuclear"
         cg_opt = cg_lib.ConditionalGradient(
             learning_rate=tf.constant(0.5), lambda_=tf.constant(0.01), ord=ord
         )
@@ -845,6 +832,9 @@ def test_like_dist_belief_frobenius_cg01():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse_frobenius():
+    learning_rate = 0.1
+    lambda_ = 0.1
+    ord = "fro"
     # TODO:
     #       To address the issue #347.
     for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
@@ -862,9 +852,6 @@ def test_sparse_frobenius():
         )
         norm0 = tf.math.reduce_sum(tf.math.multiply(grads0, grads0)) ** 0.5
         norm1 = tf.math.reduce_sum(tf.math.multiply(grads1, grads1)) ** 0.5
-        learning_rate = 0.1
-        lambda_ = 0.1
-        ord = "fro"
         cg_opt = cg_lib.ConditionalGradient(
             learning_rate=learning_rate, lambda_=lambda_, ord=ord
         )
@@ -1000,6 +987,9 @@ def test_sharing_frobenius(dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sharing_nuclear():
+    learning_rate = 0.1
+    lambda_ = 0.1
+    ord = "nuclear"
     # TODO:
     #       To address the issue #36764.
     for dtype in _dtypes_with_checking_system(
@@ -1011,9 +1001,6 @@ def test_sharing_nuclear():
         grads1 = tf.constant([0.01, 0.01], dtype=dtype)
         top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(grads0)
         top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(grads1)
-        learning_rate = 0.1
-        lambda_ = 0.1
-        ord = "nuclear"
         cg_opt = cg_lib.ConditionalGradient(
             learning_rate=learning_rate, lambda_=lambda_, ord=ord
         )
@@ -1339,6 +1326,9 @@ def _db_params_nuclear_cg01():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse_nuclear():
+    learning_rate = 0.1
+    lambda_ = 0.1
+    ord = "nuclear"
     # TODO:
     #       To address the issue #347 and issue #36764.
     for dtype in _dtypes_with_checking_system(
@@ -1368,9 +1358,6 @@ def test_sparse_nuclear():
             ],
             dtype=dtype,
         )
-        learning_rate = 0.1
-        lambda_ = 0.1
-        ord = "nuclear"
         cg_opt = cg_lib.ConditionalGradient(
             learning_rate=learning_rate, lambda_=lambda_, ord=ord
         )

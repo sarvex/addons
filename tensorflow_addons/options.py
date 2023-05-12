@@ -6,11 +6,7 @@ import traceback
 try:
     _TF_ADDONS_PY_OPS = bool(int(os.environ["TF_ADDONS_PY_OPS"]))
 except KeyError:
-    if platform.system() == "Linux":
-        _TF_ADDONS_PY_OPS = False
-    else:
-        _TF_ADDONS_PY_OPS = True
-
+    _TF_ADDONS_PY_OPS = platform.system() != "Linux"
 _FALLBACK_WARNING_TEMPLATE = """{}
 
 The {} C++/CUDA custom op could not be loaded.

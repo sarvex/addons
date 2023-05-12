@@ -211,8 +211,7 @@ def _get_gaussian_kernel(sigma, filter_shape):
 
 def _get_gaussian_kernel_2d(gaussian_filter_x, gaussian_filter_y):
     """Compute 2D Gaussian kernel given 1D kernels."""
-    gaussian_kernel = tf.matmul(gaussian_filter_x, gaussian_filter_y)
-    return gaussian_kernel
+    return tf.matmul(gaussian_filter_x, gaussian_filter_y)
 
 
 @tf.function

@@ -37,8 +37,7 @@ def _reduce_average(
 
     weighted_sum = tf.reduce_sum(weights * input_tensor, axis=axis, keepdims=keepdims)
     sum_of_weights = tf.reduce_sum(weights, axis=axis, keepdims=keepdims)
-    average = weighted_sum / sum_of_weights
-    return average
+    return weighted_sum / sum_of_weights
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -96,9 +95,7 @@ class RSquare(Metric):
 
         if multioutput not in _VALID_MULTIOUTPUT:
             raise ValueError(
-                "The multioutput argument must be one of {}, but was: {}".format(
-                    _VALID_MULTIOUTPUT, multioutput
-                )
+                f"The multioutput argument must be one of {_VALID_MULTIOUTPUT}, but was: {multioutput}"
             )
         self.multioutput = multioutput
         self.num_regressors = num_regressors
@@ -149,9 +146,7 @@ class RSquare(Metric):
             r2_score = _reduce_average(raw_scores, weights=total)
         else:
             raise RuntimeError(
-                "The multioutput attribute must be one of {}, but was: {}".format(
-                    _VALID_MULTIOUTPUT, self.multioutput
-                )
+                f"The multioutput attribute must be one of {_VALID_MULTIOUTPUT}, but was: {self.multioutput}"
             )
 
         if self.num_regressors < 0:

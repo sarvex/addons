@@ -300,7 +300,7 @@ def gather_tree_from_array(
 def _check_ndims(t):
     if t.shape.ndims is None:
         raise ValueError(
-            "Expected tensor (%s) to have known rank, but ndims == None." % t
+            f"Expected tensor ({t}) to have known rank, but ndims == None."
         )
 
 
@@ -435,20 +435,19 @@ class BeamSearchDecoderMixin:
         size = self._cell.output_size
         if self._output_layer is None:
             return size
-        else:
-            # To use layer's compute_output_shape, we need to convert the
-            # RNNCell's output_size entries into shapes with an unknown
-            # batch size.  We then pass this through the layer's
-            # compute_output_shape and read off all but the first (batch)
-            # dimensions to get the output size of the rnn with the layer
-            # applied to the top.
-            output_shape_with_unknown_batch = tf.nest.map_structure(
-                lambda s: tf.TensorShape([None]).concatenate(s), size
-            )
-            layer_output_shape = self._output_layer.compute_output_shape(
-                output_shape_with_unknown_batch
-            )
-            return tf.nest.map_structure(lambda s: s[1:], layer_output_shape)
+        # To use layer's compute_output_shape, we need to convert the
+        # RNNCell's output_size entries into shapes with an unknown
+        # batch size.  We then pass this through the layer's
+        # compute_output_shape and read off all but the first (batch)
+        # dimensions to get the output size of the rnn with the layer
+        # applied to the top.
+        output_shape_with_unknown_batch = tf.nest.map_structure(
+            lambda s: tf.TensorShape([None]).concatenate(s), size
+        )
+        layer_output_shape = self._output_layer.compute_output_shape(
+            output_shape_with_unknown_batch
+        )
+        return tf.nest.map_structure(lambda s: s[1:], layer_output_shape)
 
     @property
     def tracks_own_finished(self):
@@ -606,10 +605,7 @@ class BeamSearchDecoderMixin:
         if isinstance(t, tf.TensorArray):
             return t
         _check_ndims(t)
-        if t.shape.ndims >= 1:
-            return self._split_batch_beams(t, s)
-        else:
-            return t
+        return self._split_batch_beams(t, s) if t.shape.ndims >= 1 else t
 
     def _maybe_merge_batch_beams(self, t, s):
         """Splits the tensor from a batch by beams into a batch of beams.
@@ -631,10 +627,7 @@ class BeamSearchDecoderMixin:
         if isinstance(t, tf.TensorArray):
             return t
         _check_ndims(t)
-        if t.shape.ndims >= 2:
-            return self._merge_batch_beams(t, s)
-        else:
-            return t
+        return self._merge_batch_beams(t, s) if t.shape.ndims >= 2 else t
 
     def _maybe_sort_array_beams(self, t, parent_ids, sequence_length):
         """Maybe sorts beams within a `TensorArray`.
@@ -1164,10 +1157,11 @@ def get_attention_probs(next_cell_state, coverage_penalty_weight):
     if isinstance(next_cell_state, attention_wrapper.AttentionWrapperState):
         probs_per_attn_layer = [attention_probs_from_attn_state(next_cell_state)]
     elif isinstance(next_cell_state, tuple):
-        for state in next_cell_state:
-            if isinstance(state, attention_wrapper.AttentionWrapperState):
-                probs_per_attn_layer.append(attention_probs_from_attn_state(state))
-
+        probs_per_attn_layer.extend(
+            attention_probs_from_attn_state(state)
+            for state in next_cell_state
+            if isinstance(state, attention_wrapper.AttentionWrapperState)
+        )
     if not probs_per_attn_layer:
         raise ValueError(
             "coverage_penalty_weight must be 0.0 if no cell is attentional."

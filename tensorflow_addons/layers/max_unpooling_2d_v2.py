@@ -45,8 +45,7 @@ def _max_unpooling_2d_v2(updates, mask, output_size):
     updates_size = tf.size(updates)
     indices = tf.transpose(tf.reshape(tf.stack([b, y, x, f]), [4, updates_size]))
     values = tf.reshape(updates, [updates_size])
-    ret = tf.scatter_nd(indices, values, output_shape)
-    return ret
+    return tf.scatter_nd(indices, values, output_shape)
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")

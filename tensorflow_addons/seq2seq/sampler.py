@@ -252,9 +252,7 @@ class TrainingSampler(Sampler):
         elif mask is not None:
             mask = tf.convert_to_tensor(mask)
             if mask.shape.ndims != 2:
-                raise ValueError(
-                    "Expected mask to a 2D tensor, but received shape: %s" % mask
-                )
+                raise ValueError(f"Expected mask to a 2D tensor, but received shape: {mask}")
             if not mask.dtype.is_bool:
                 raise ValueError(
                     "Expected mask to be a boolean tensor, but received "
@@ -292,8 +290,7 @@ class TrainingSampler(Sampler):
 
     def sample(self, time, outputs, state):
         del state
-        sample_ids = tf.cast(tf.argmax(outputs, axis=-1), tf.int32)
-        return sample_ids
+        return tf.cast(tf.argmax(outputs, axis=-1), tf.int32)
 
     def next_inputs(self, time, outputs, state, sample_ids):
         del sample_ids
@@ -631,10 +628,9 @@ class GreedyEmbeddingSampler(Sampler):
         # Outputs are logits, use argmax to get the most probable id
         if not isinstance(outputs, tf.Tensor):
             raise TypeError(
-                "Expected outputs to be a single Tensor, got: %s" % type(outputs)
+                f"Expected outputs to be a single Tensor, got: {type(outputs)}"
             )
-        sample_ids = tf.argmax(outputs, axis=-1, output_type=tf.int32)
-        return sample_ids
+        return tf.argmax(outputs, axis=-1, output_type=tf.int32)
 
     def next_inputs(self, time, outputs, state, sample_ids):
         """next_inputs_fn for GreedyEmbeddingHelper."""
@@ -691,7 +687,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
         # Outputs are logits, we sample instead of argmax (greedy).
         if not isinstance(outputs, tf.Tensor):
             raise TypeError(
-                "Expected outputs to be a single Tensor, got: %s" % type(outputs)
+                f"Expected outputs to be a single Tensor, got: {type(outputs)}"
             )
         if self.softmax_temperature is None:
             logits = outputs

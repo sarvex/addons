@@ -71,8 +71,9 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
         self.bins = [conv_utils.normalize_tuple(bin, 2, "bin") for bin in bins]
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.pool_layers = []
-        for bin in self.bins:
-            self.pool_layers.append(AdaptiveAveragePooling2D(bin, self.data_format))
+        self.pool_layers.extend(
+            AdaptiveAveragePooling2D(bin, self.data_format) for bin in self.bins
+        )
         super().__init__(*args, **kwargs)
 
     def call(self, inputs, **kwargs):
@@ -93,7 +94,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 )
                 outputs.append(output)
                 index += 1
-            outputs = tf.concat(outputs, axis=1)
+            return tf.concat(outputs, axis=1)
         else:
             for bin in self.bins:
                 height_overflow = dynamic_input_shape[2] % bin[0]
@@ -109,13 +110,10 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 outputs.append(output)
                 index += 1
 
-            outputs = tf.concat(outputs, axis=2)
-        return outputs
+            return tf.concat(outputs, axis=2)
 
     def compute_output_shape(self, input_shape):
-        pooled_shape = 0
-        for bin in self.bins:
-            pooled_shape += tf.reduce_prod(bin)
+        pooled_shape = sum(tf.reduce_prod(bin) for bin in self.bins)
         if self.data_format == "channels_last":
             return tf.TensorShape([input_shape[0], pooled_shape, input_shape[-1]])
         else:

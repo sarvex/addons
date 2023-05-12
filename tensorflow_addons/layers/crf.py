@@ -115,9 +115,8 @@ class CRF(tf.keras.layers.Layer):
     def call(self, inputs, mask=None):
         # mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
 
-        if mask is not None:
-            if tf.keras.backend.ndim(mask) != 2:
-                raise ValueError("Input mask to CRF must have dim 2 if not None")
+        if mask is not None and tf.keras.backend.ndim(mask) != 2:
+            raise ValueError("Input mask to CRF must have dim 2 if not None")
 
         if mask is not None:
             # left padding of mask is not supported, due the underline CRF function
@@ -156,21 +155,17 @@ class CRF(tf.keras.layers.Layer):
         mask.
         """
         if mask is not None:
-            sequence_length = self.mask_to_sequence_length(mask)
-        else:
-            # make a mask tensor from input, then used to generate sequence_length
-            input_energy_shape = tf.shape(input_)
-            raw_input_shape = tf.slice(input_energy_shape, [0], [2])
-            alt_mask = tf.ones(raw_input_shape)
+            return self.mask_to_sequence_length(mask)
+        # make a mask tensor from input, then used to generate sequence_length
+        input_energy_shape = tf.shape(input_)
+        raw_input_shape = tf.slice(input_energy_shape, [0], [2])
+        alt_mask = tf.ones(raw_input_shape)
 
-            sequence_length = self.mask_to_sequence_length(alt_mask)
-
-        return sequence_length
+        return self.mask_to_sequence_length(alt_mask)
 
     def mask_to_sequence_length(self, mask):
         """compute sequence length from mask."""
-        sequence_length = tf.reduce_sum(tf.cast(mask, tf.int64), 1)
-        return sequence_length
+        return tf.reduce_sum(tf.cast(mask, tf.int64), 1)
 
     @staticmethod
     def _compute_mask_right_boundary(mask):
@@ -181,22 +176,9 @@ class CRF(tf.keras.layers.Layer):
             [mask[:, offset:], tf.zeros_like(mask[:, :offset])], axis=1
         )
 
-        # NOTE: below code is different from keras_contrib
-        # Original code in keras_contrib:
-        # end_mask = K.cast(
-        #   K.greater(self.shift_left(mask), mask),
-        #   K.floatx()
-        # )
-        # has a bug, confirmed
-        # by the original keras_contrib maintainer
-        # Luiz Felix (github: lzfelix),
-
-        # 0011100 > 0111000 => 0000100
-        right_boundary = tf.math.greater(
+        return tf.math.greater(
             tf.cast(mask, tf.int32), tf.cast(left_shifted_mask, tf.int32)
         )
-
-        return right_boundary
 
     @staticmethod
     def _compute_mask_left_boundary(mask):
@@ -207,12 +189,9 @@ class CRF(tf.keras.layers.Layer):
             [tf.zeros_like(mask[:, :offset]), mask[:, :-offset]], axis=1
         )
 
-        # 0011100 > 0001110 => 0010000
-        left_boundary = tf.math.greater(
+        return tf.math.greater(
             tf.cast(mask, tf.int32), tf.cast(right_shifted_mask, tf.int32)
         )
-
-        return left_boundary
 
     def add_boundary_energy(self, potentials, mask, start, end):
         def expand_scalar_to_3d(x):
@@ -262,8 +241,7 @@ class CRF(tf.keras.layers.Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
-        output_shape = input_shape[:2]
-        return output_shape
+        return input_shape[:2]
 
     def compute_mask(self, input_, mask=None):
         """keep mask shape [batch_size, max_seq_len]"""

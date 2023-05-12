@@ -168,16 +168,15 @@ class CorrelationCost(tf.keras.layers.Layer):
         data_format: str,
         **kwargs,
     ):
-        self.kernel_size = kernel_size
         self.max_displacement = max_displacement
         self.stride_1 = stride_1
         self.stride_2 = stride_2
         self.pad = pad
 
-        if data_format != "channels_last" and data_format != "channels_first":
+        self.kernel_size = kernel_size
+        if data_format not in ["channels_last", "channels_first"]:
             raise ValueError(
-                "`data_format` must be either `channels_last` or"
-                "`channels_first`, instead got %s" % data_format
+                f"`data_format` must be either `channels_last` or`channels_first`, instead got {data_format}"
             )
 
         self.data_format = data_format

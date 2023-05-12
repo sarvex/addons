@@ -57,8 +57,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
         super().__init__(layer, **kwargs)
         if power_iterations <= 0:
             raise ValueError(
-                "`power_iterations` should be greater than zero, got "
-                "`power_iterations={}`".format(power_iterations)
+                f"`power_iterations` should be greater than zero, got `power_iterations={power_iterations}`"
             )
         self.power_iterations = power_iterations
         self._initialized = False
@@ -75,8 +74,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
             self.w = self.layer.embeddings
         else:
             raise AttributeError(
-                "{} object has no attribute 'kernel' nor "
-                "'embeddings'".format(type(self.layer).__name__)
+                f"{type(self.layer).__name__} object has no attribute 'kernel' nor 'embeddings'"
             )
 
         self.w_shape = self.w.shape.as_list()
@@ -97,8 +95,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
         if training:
             self.normalize_weights()
 
-        output = self.layer(inputs)
-        return output
+        return self.layer(inputs)
 
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(self.layer.compute_output_shape(input_shape).as_list())

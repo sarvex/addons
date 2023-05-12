@@ -54,8 +54,7 @@ class PoincareNormalize(tf.keras.layers.Layer):
         square_sum = tf.math.reduce_sum(tf.math.square(x), self.axis, keepdims=True)
         x_inv_norm = tf.math.rsqrt(square_sum)
         x_inv_norm = tf.math.minimum((1.0 - self.epsilon) * x_inv_norm, 1.0)
-        outputs = tf.math.multiply(x, x_inv_norm)
-        return outputs
+        return tf.math.multiply(x, x_inv_norm)
 
     def compute_output_shape(self, input_shape):
         return input_shape

@@ -128,10 +128,7 @@ def test_normalization():
         _ = model(
             tf.constant(np.ones((1, 2, 2, 1), dtype=np.float32)), training=training
         )
-        if training:
-            w = weights_normalized
-        else:
-            w = weights
+        w = weights_normalized if training else weights
         np.testing.assert_allclose(w, np.squeeze(model.layers[0].w.numpy()))
 
 

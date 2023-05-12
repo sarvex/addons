@@ -84,11 +84,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                 " contains a `kernel` for weights"
             )
 
-        if self.is_rnn:
-            kernel = kernel_layer.recurrent_kernel
-        else:
-            kernel = kernel_layer.kernel
-
+        kernel = kernel_layer.recurrent_kernel if self.is_rnn else kernel_layer.kernel
         # The kernel's filter or unit dimension is -1
         self.layer_depth = int(kernel.shape[-1])
         self.kernel_norm_axes = list(range(kernel.shape.rank - 1))

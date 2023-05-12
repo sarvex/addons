@@ -161,11 +161,7 @@ class TQDMProgressBar(Callback):
                 self.epoch_progress_tqdm.close()
 
     def _update_progbar(self, logs):
-        if self.mode == "samples":
-            batch_size = logs["size"]
-        else:
-            batch_size = 1
-
+        batch_size = logs["size"] if self.mode == "samples" else 1
         self.num_samples_seen += batch_size
         self.steps_to_update += 1
         self.steps_so_far += 1
@@ -241,8 +237,7 @@ class TQDMProgressBar(Callback):
                 continue
             pair = self.metrics_format.format(name=key, value=value / factor)
             metric_value_pairs.append(pair)
-        metrics_string = self.metrics_separator.join(metric_value_pairs)
-        return metrics_string
+        return self.metrics_separator.join(metric_value_pairs)
 
     def get_config(self):
         config = {

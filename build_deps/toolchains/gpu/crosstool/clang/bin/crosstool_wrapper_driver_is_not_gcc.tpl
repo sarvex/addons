@@ -71,12 +71,9 @@ def GetOptionValue(argv, option):
   """
 
   parser = ArgumentParser()
-  parser.add_argument('-' + option, nargs='*', action='append')
+  parser.add_argument(f'-{option}', nargs='*', action='append')
   args, _ = parser.parse_known_args(argv)
-  if not args or not vars(args)[option]:
-    return []
-  else:
-    return sum(vars(args)[option], [])
+  return sum(vars(args)[option], []) if args and vars(args)[option] else []
 
 
 def GetHostCompilerOptions(argv):
@@ -109,7 +106,7 @@ def GetHostCompilerOptions(argv):
   if args.fno_canonical_system_headers:
     opts += ' -fno-canonical-system-headers'
   if args.sysroot:
-    opts += ' --sysroot ' + args.sysroot[0]
+    opts += f' --sysroot {args.sysroot[0]}'
 
   return opts
 
@@ -118,8 +115,7 @@ def _update_options(nvcc_options):
     return nvcc_options
 
   update_options = { "relaxed-constexpr" : "expt-relaxed-constexpr" }
-  return [ update_options[opt] if opt in update_options else opt
-                    for opt in nvcc_options ]
+  return [update_options.get(opt, opt) for opt in nvcc_options]
 
 def GetNvccOptions(argv):
   """Collect the -nvcc_options values from argv.
@@ -138,7 +134,7 @@ def GetNvccOptions(argv):
 
   if args.nvcc_options:
     options = _update_options(sum(args.nvcc_options, []))
-    return ' '.join(['--'+a for a in options])
+    return ' '.join([f'--{a}' for a in options])
   return ''
 
 

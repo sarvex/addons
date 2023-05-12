@@ -53,7 +53,7 @@ def sparsemax(logits: types.TensorLike, axis: int = -1) -> tf.Tensor:
     # We need its original shape for shape inference.
     shape = logits.get_shape()
     rank = shape.rank
-    is_last_axis = (axis == -1) or (axis == rank - 1)
+    is_last_axis = axis in [-1, rank - 1]
 
     if is_last_axis:
         output = _compute_2d_sparsemax(logits)

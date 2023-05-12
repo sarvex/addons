@@ -64,8 +64,7 @@ def _adjust_hue_in_yiq_np(x_np, delta_h):
 
 def _adjust_hue_in_yiq_tf(x_np, delta_h):
     x = tf.constant(x_np)
-    y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
-    return y
+    return distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
 
 
 @pytest.mark.parametrize(
@@ -90,7 +89,7 @@ def test_adjust_random_hue_in_yiq(shape, style, dtype):
         x_np[..., 1] = x_np[..., 0]
         x_np[..., 2] = x_np[..., 0]
     else:
-        raise AssertionError("Invalid test style: %s" % (style))
+        raise AssertionError(f"Invalid test style: {style}")
     y_np = _adjust_hue_in_yiq_np(x_np, delta_h)
     y_tf = _adjust_hue_in_yiq_tf(x_np, delta_h)
     test_utils.assert_allclose_according_to_type(
@@ -146,8 +145,7 @@ def _adjust_value_in_yiq_np(x_np, scale):
 
 def _adjust_value_in_yiq_tf(x_np, scale):
     x = tf.constant(x_np)
-    y = distort_image_ops.adjust_hsv_in_yiq(x, 0, 1, scale)
-    return y
+    return distort_image_ops.adjust_hsv_in_yiq(x, 0, 1, scale)
 
 
 def test_adjust_random_value_in_yiq():
@@ -171,17 +169,17 @@ def test_adjust_random_value_in_yiq():
             scale = np.random.rand() * 2.0 - 1.0
             if test_style == "all_random":
                 pass
-            elif test_style == "rg_same":
-                x_np[..., 1] = x_np[..., 0]
-            elif test_style == "rb_same":
-                x_np[..., 2] = x_np[..., 0]
             elif test_style == "gb_same":
                 x_np[..., 2] = x_np[..., 1]
+            elif test_style == "rb_same":
+                x_np[..., 2] = x_np[..., 0]
+            elif test_style == "rg_same":
+                x_np[..., 1] = x_np[..., 0]
             elif test_style == "rgb_same":
                 x_np[..., 1] = x_np[..., 0]
                 x_np[..., 2] = x_np[..., 0]
             else:
-                raise AssertionError("Invalid test style: %s" % (test_style))
+                raise AssertionError(f"Invalid test style: {test_style}")
             y_np = _adjust_value_in_yiq_np(x_np, scale)
             y_tf = _adjust_value_in_yiq_tf(x_np, scale)
             np.testing.assert_allclose(y_tf, y_np, rtol=2e-4, atol=1e-4)
@@ -219,16 +217,14 @@ def test_invalid_channels_value():
 
 def _adjust_saturation_in_yiq_tf(x_np, scale):
     x = tf.constant(x_np)
-    y = distort_image_ops.adjust_hsv_in_yiq(x, 0, scale, 1)
-    return y
+    return distort_image_ops.adjust_hsv_in_yiq(x, 0, scale, 1)
 
 
 def _adjust_saturation_in_yiq_np(x_np, scale):
     """Adjust saturation using linear interpolation."""
     rgb_weights = np.array([0.299, 0.587, 0.114])
     gray = np.sum(x_np * rgb_weights, axis=-1, keepdims=True)
-    y_v = x_np * scale + gray * (1 - scale)
-    return y_v
+    return x_np * scale + gray * (1 - scale)
 
 
 @pytest.mark.parametrize(
@@ -253,7 +249,7 @@ def test_adjust_random_saturation_in_yiq(shape, style, dtype):
         x_np[..., 1] = x_np[..., 0]
         x_np[..., 2] = x_np[..., 0]
     else:
-        raise AssertionError("Invalid test style: %s" % (style))
+        raise AssertionError(f"Invalid test style: {style}")
     y_baseline = _adjust_saturation_in_yiq_np(x_np, scale)
     y_tf = _adjust_saturation_in_yiq_tf(x_np, scale)
     test_utils.assert_allclose_according_to_type(

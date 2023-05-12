@@ -90,8 +90,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         supported_norms = ["fro", "nuclear"]
         if ord not in supported_norms:
             raise ValueError(
-                "'ord' must be a supported matrix norm in %s, got '%s' instead"
-                % (supported_norms, ord)
+                f"'ord' must be a supported matrix norm in {supported_norms}, got '{ord}' instead"
             )
         self.ord = ord
 
@@ -204,5 +203,4 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             s = top_singular_vector
 
         var_update_value = tf.math.multiply(var_slice, lr) - (1 - lr) * lambda_ * s
-        var_update_op = self._resource_scatter_update(var, indices, var_update_value)
-        return var_update_op
+        return self._resource_scatter_update(var, indices, var_update_value)

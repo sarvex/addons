@@ -62,18 +62,16 @@ def setup_values(
     assert 3 <= len(image_shape) <= 4
     height, width = image_shape[-3], image_shape[-2]
     plane = tf.constant(
-        [x for x in range(1, height * width + 1)], shape=(height, width), dtype=dtype
+        list(range(1, height * width + 1)), shape=(height, width), dtype=dtype
     )
     image = tile_image(plane, image_shape=image_shape)
 
-    result = filter2d_fn(
+    return filter2d_fn(
         image,
         filter_shape=filter_shape,
         padding=padding,
         constant_values=constant_values,
     )
-
-    return result
 
 
 def verify_values(

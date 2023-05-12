@@ -64,8 +64,7 @@ def connected_components(
             images = image_or_images
         else:
             raise TypeError(
-                "images should have rank 2 (HW) or 3 (NHW). Static shape is %s"
-                % image_or_images.get_shape()
+                f"images should have rank 2 (HW) or 3 (NHW). Static shape is {image_or_images.get_shape()}"
             )
         components = _image_so.ops.addons_image_connected_components(images)
 

@@ -80,10 +80,7 @@ class MovingAverage(AveragedOptimizerWrapper):
             if isinstance(self._num_updates, tf.Variable):
                 tf.debugging.assert_integer(
                     self._num_updates,
-                    (
-                        'type of argument "num_updates" must be '
-                        "int; got {} instead".format(self._num_updates.dtype)
-                    ),
+                    f'type of argument "num_updates" must be int; got {self._num_updates.dtype} instead',
                 )
             num_updates = tf.cast(self._num_updates, tf.float32, name="num_updates")
             average_decay = tf.minimum(

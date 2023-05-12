@@ -94,7 +94,7 @@ def sequence_loss(
         )
 
     targets_rank = len(targets.shape)
-    if targets_rank != 2 and targets_rank != 3:
+    if targets_rank not in [2, 3]:
         raise ValueError(
             "Targets must be either a [batch_size x sequence_length] tensor "
             + "where each element contains the labels' index"
@@ -152,7 +152,7 @@ def sequence_loss(
             total_count = tf.cast(tf.math.count_nonzero(weights), crossent.dtype)
             crossent = tf.math.divide_no_nan(crossent, total_count)
         else:
-            crossent = tf.reshape(crossent, tf.shape(input=logits)[0:2])
+            crossent = tf.reshape(crossent, tf.shape(input=logits)[:2])
             if average_across_timesteps or average_across_batch:
                 reduce_axis = [0] if average_across_batch else [1]
                 crossent = tf.reduce_sum(input_tensor=crossent, axis=reduce_axis)

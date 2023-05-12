@@ -113,6 +113,13 @@ def test_sparse():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_basic_with_learning_rate_decay():
+    learning_rate = 0.001
+    beta_1 = 0.9
+    beta_2 = 0.999
+    epsilon = 1e-7
+    decay = 0.5
+    lamb_wd = 0.01
+
     for i, dtype in enumerate(_dtypes_to_test(use_gpu=test_utils.is_gpu_available())):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
@@ -125,13 +132,6 @@ def test_basic_with_learning_rate_decay():
         var1 = tf.Variable(var1_np, name="var1_%d" % i)
         grads0 = tf.constant(grads0_np)
         grads1 = tf.constant(grads1_np)
-
-        learning_rate = 0.001
-        beta_1 = 0.9
-        beta_2 = 0.999
-        epsilon = 1e-7
-        decay = 0.5
-        lamb_wd = 0.01
 
         opt = lamb.LAMB(
             learning_rate=learning_rate,
@@ -162,6 +162,12 @@ def test_basic_with_learning_rate_decay():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_basic_with_learning_rate_inverse_time_decay():
+    learning_rate = 0.001
+    decay = 0.5
+    beta_1 = 0.9
+    beta_2 = 0.999
+    epsilon = 1e-7
+
     for i, dtype in enumerate(_dtypes_to_test(use_gpu=test_utils.is_gpu_available())):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
@@ -175,15 +181,9 @@ def test_basic_with_learning_rate_inverse_time_decay():
         grads0 = tf.constant(grads0_np)
         grads1 = tf.constant(grads1_np)
 
-        learning_rate = 0.001
-        decay = 0.5
         lr_schedule = tf.keras.optimizers.schedules.InverseTimeDecay(
             learning_rate, decay_steps=1.0, decay_rate=decay
         )
-        beta_1 = 0.9
-        beta_2 = 0.999
-        epsilon = 1e-7
-
         opt = lamb.LAMB(
             learning_rate=lr_schedule, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon
         )

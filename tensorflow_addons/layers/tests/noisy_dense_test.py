@@ -39,7 +39,7 @@ def test_noisy_dense_dtype(dtype):
     inputs = tf.convert_to_tensor(
         np.random.randint(low=0, high=7, size=(2, 2)), dtype=dtype
     )
-    layer = NoisyDense(5, dtype=dtype, name="noisy_dense_" + dtype)
+    layer = NoisyDense(5, dtype=dtype, name=f"noisy_dense_{dtype}")
     outputs = layer(inputs)
     np.testing.assert_array_equal(outputs.dtype, dtype)
 

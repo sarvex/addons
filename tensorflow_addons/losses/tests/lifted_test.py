@@ -66,10 +66,11 @@ def lifted_struct_loss_np(labels, embedding, margin):
         for j in range(num_data):
             if adjacency[i][j] > 0.0 and i != j:
                 d_pos = pdist_matrix[i][j]
-                negs = []
-                for k in range(num_data):
-                    if not adjacency[i][k]:
-                        negs.append(margin - pdist_matrix[i][k])
+                negs = [
+                    margin - pdist_matrix[i][k]
+                    for k in range(num_data)
+                    if not adjacency[i][k]
+                ]
                 for m in range(num_data):
                     if not adjacency[j][m]:
                         negs.append(margin - pdist_matrix[j][m])

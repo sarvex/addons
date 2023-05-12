@@ -117,7 +117,7 @@ class MaxUnpooling2D(tf.keras.layers.Layer):
     ):
         super(MaxUnpooling2D, self).__init__(**kwargs)
 
-        if padding != "SAME" and padding != "VALID":
+        if padding not in ["SAME", "VALID"]:
             raise ValueError('Padding must be a string from: "SAME", "VALID"')
 
         self.pool_size = normalize_tuple(pool_size, 2, "pool_size")

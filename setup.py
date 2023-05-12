@@ -90,19 +90,13 @@ setup(
     install_requires=Path("requirements.txt").read_text().splitlines(),
     extras_require={
         "tensorflow": [
-            "tensorflow>={},<{}".format(
-                inclusive_min_tf_version, exclusive_max_tf_version
-            )
+            f"tensorflow>={inclusive_min_tf_version},<{exclusive_max_tf_version}"
         ],
         "tensorflow-gpu": [
-            "tensorflow-gpu>={},<{}".format(
-                inclusive_min_tf_version, exclusive_max_tf_version
-            )
+            f"tensorflow-gpu>={inclusive_min_tf_version},<{exclusive_max_tf_version}"
         ],
         "tensorflow-cpu": [
-            "tensorflow-cpu>={},<{}".format(
-                inclusive_min_tf_version, exclusive_max_tf_version
-            )
+            f"tensorflow-cpu>={inclusive_min_tf_version},<{exclusive_max_tf_version}"
         ],
     },
     include_package_data=True,

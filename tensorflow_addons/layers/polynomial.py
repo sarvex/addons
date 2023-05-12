@@ -98,8 +98,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     def build(self, input_shape):
         if not isinstance(input_shape, (tuple, list)) or len(input_shape) != 2:
             raise ValueError(
-                "Input shapes must be a tuple or list of size 2, "
-                "got {}".format(input_shape)
+                f"Input shapes must be a tuple or list of size 2, got {input_shape}"
             )
         last_dim = input_shape[-1][-1]
         if self.projection_dim is None:
@@ -114,11 +113,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
         else:
             if self.projection_dim < 0 or self.projection_dim > last_dim / 2:
                 raise ValueError(
-                    "`projection_dim` should be smaller than last_dim / 2 to improve"
-                    "the model efficiency, and should be positive. Got "
-                    "`projection_dim` {}, and last dimension of input {}".format(
-                        self.projection_dim, last_dim
-                    )
+                    f"`projection_dim` should be smaller than last_dim / 2 to improvethe model efficiency, and should be positive. Got `projection_dim` {self.projection_dim}, and last dimension of input {last_dim}"
                 )
             self.kernel_u = self.add_weight(
                 "kernel_u",
@@ -150,8 +145,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     def call(self, inputs):
         if not isinstance(inputs, (tuple, list)) or len(inputs) != 2:
             raise ValueError(
-                "Inputs to the layer must be a tuple or list of size 2, "
-                "got {}".format(inputs)
+                f"Inputs to the layer must be a tuple or list of size 2, got {inputs}"
             )
         x0, x = inputs
         if self.projection_dim is None:

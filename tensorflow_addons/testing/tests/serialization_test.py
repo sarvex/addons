@@ -58,7 +58,7 @@ class MyOtherDummyMetric(Metric):
 
     def get_config(self):
         config = {"to_add": self.to_add + 1}
-        config.update(super().get_config())
+        config |= super().get_config()
         return config
 
     def result(self):

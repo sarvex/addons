@@ -74,7 +74,7 @@ def pytest_make_parametrize_id(config, val, argname):
     if isinstance(val, tf.DType):
         return val.name
     if val is False:
-        return "no_" + argname
+        return f"no_{argname}"
     if val is True:
         return argname
 
@@ -186,13 +186,13 @@ def device(request):
             # only one in the first GPU (so first in the list of virtual devices).
             requested_device += ":0"
         else:
-            raise KeyError("Invalid device: " + requested_device)
+            raise KeyError(f"Invalid device: {requested_device}")
         with tf.device(requested_device):
             yield requested_device
 
 
 def get_marks(device_name):
-    if device_name == "gpu" or device_name == tf.distribute.MirroredStrategy:
+    if device_name in ["gpu", tf.distribute.MirroredStrategy]:
         return [pytest.mark.needs_gpu]
     else:
         return []
@@ -200,23 +200,18 @@ def get_marks(device_name):
 
 def pytest_generate_tests(metafunc):
     marker = metafunc.definition.get_closest_marker("with_device")
-    if marker is None:
-        # tests which don't have the "with_device" mark are executed on CPU
-        # to ensure reproducibility. We can't let TensorFlow decide
-        # where to place the ops.
-        devices = ["cpu"]
-    else:
-        devices = marker.args[0]
-
+    devices = ["cpu"] if marker is None else marker.args[0]
     parameters = [pytest.param(x, marks=get_marks(x)) for x in devices]
     metafunc.parametrize("device", parameters, indirect=True)
 
 
 def pytest_collection_modifyitems(items):
     for item in items:
-        if item.get_closest_marker("needs_gpu") is not None:
-            if not is_gpu_available():
-                item.add_marker(pytest.mark.skip("The gpu is not available."))
+        if (
+            item.get_closest_marker("needs_gpu") is not None
+            and not is_gpu_available()
+        ):
+            item.add_marker(pytest.mark.skip("The gpu is not available."))
 
 
 def assert_not_allclose(a, b, **kwargs):
@@ -286,10 +281,9 @@ def discover_classes(module, parent, class_exceptions):
         a list of classes for testing using pytest for parameterized tests
     """
 
-    classes = [
+    return [
         class_info[1]
         for class_info in inspect.getmembers(module, inspect.isclass)
-        if issubclass(class_info[1], parent) and not class_info[0] in class_exceptions
+        if issubclass(class_info[1], parent)
+        and class_info[0] not in class_exceptions
     ]
-
-    return classes

@@ -61,7 +61,7 @@ def test_time_stopping_verbose(capsys, verbose):
     history = model.fit(X, y, epochs=10, verbose=0, callbacks=[time_stopping])
     fit_stdout = capsys.readouterr().out
     nb_epochs_run = len(history.epoch)
-    message = "Timed stopping at epoch " + str(nb_epochs_run)
+    message = f"Timed stopping at epoch {nb_epochs_run}"
     if verbose:
         assert message in fit_stdout
     else:

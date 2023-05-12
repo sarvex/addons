@@ -28,10 +28,9 @@ def manual_embedding_bag(indices, params, weights=None, combiner="mean"):
         gathered *= tf.expand_dims(weights, -1)
     if combiner == "sum":
         return tf.reduce_sum(gathered, -2, keepdims=False)
-    else:
-        assert combiner == "mean"
-        assert weights is None
-        return tf.reduce_mean(gathered, -2, keepdims=False)
+    assert combiner == "mean"
+    assert weights is None
+    return tf.reduce_mean(gathered, -2, keepdims=False)
 
 
 @pytest.mark.with_device(["cpu", "gpu"])

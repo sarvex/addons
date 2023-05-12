@@ -372,11 +372,10 @@ def dynamic_decode(
         def _shape(batch_size, from_shape):
             if not isinstance(from_shape, tf.TensorShape) or from_shape.ndims == 0:
                 return None
-            else:
-                batch_size = tf.get_static_value(
-                    tf.convert_to_tensor(batch_size, name="batch_size")
-                )
-                return tf.TensorShape([batch_size]).concatenate(from_shape)
+            batch_size = tf.get_static_value(
+                tf.convert_to_tensor(batch_size, name="batch_size")
+            )
+            return tf.TensorShape([batch_size]).concatenate(from_shape)
 
         dynamic_size = maximum_iterations is None or not is_xla
         # The dynamic shape `TensorArray` is not allowed in TFLite yet.

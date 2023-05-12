@@ -14,7 +14,7 @@ def test_seed_is_set():
 
 @pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
 def test_all_scopes(device):
-    assert isinstance(device, str) or isinstance(device, tf.distribute.Strategy)
+    assert isinstance(device, (str, tf.distribute.Strategy))
 
 
 def train_small_model():

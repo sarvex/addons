@@ -134,5 +134,4 @@ def _calculate_giou(b1: TensorLike, b2: TensorLike, mode: str = "giou") -> tf.Te
     enclose_width = tf.maximum(zero, enclose_xmax - enclose_xmin)
     enclose_height = tf.maximum(zero, enclose_ymax - enclose_ymin)
     enclose_area = enclose_width * enclose_height
-    giou = iou - tf.math.divide_no_nan((enclose_area - union_area), enclose_area)
-    return giou
+    return iou - tf.math.divide_no_nan((enclose_area - union_area), enclose_area)

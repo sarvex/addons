@@ -33,7 +33,7 @@ def _forward(
     input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
     input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
-    output = CorrelationCost(
+    return CorrelationCost(
         kernel_size=kernel_size,
         max_displacement=max_displacement,
         stride_1=stride_1,
@@ -41,8 +41,6 @@ def _forward(
         pad=pad,
         data_format=data_format,
     )([input_a_op, input_b_op])
-
-    return output
 
 
 def _create_test_data(data_format):

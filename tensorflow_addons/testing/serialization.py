@@ -58,30 +58,15 @@ def check_config(config, class_, strict):
             continue
         elif parameter_name == "args" and strict:
             raise KeyError(
-                "Please do not use args in the class constructor of {}, "
-                "as it hides the real signature "
-                "and degrades the user experience. "
-                "If you have no alternative to *args, "
-                "use `strict=False` in check_metric_serialization.".format(
-                    class_.__name__
-                )
+                f"Please do not use args in the class constructor of {class_.__name__}, as it hides the real signature and degrades the user experience. If you have no alternative to *args, use `strict=False` in check_metric_serialization."
             )
         elif parameter_name == "kwargs" and strict:
             raise KeyError(
-                "Please do not use kwargs in the class constructor of {}, "
-                "as it hides the real signature "
-                "and degrades the user experience. "
-                "If you have no alternative to **kwargs, "
-                "use `strict=False` in check_metric_serialization.".format(
-                    class_.__name__
-                )
+                f"Please do not use kwargs in the class constructor of {class_.__name__}, as it hides the real signature and degrades the user experience. If you have no alternative to **kwargs, use `strict=False` in check_metric_serialization."
             )
         if parameter_name not in config:
             raise KeyError(
-                "The constructor parameter {} is not present in the config dict "
-                "obtained with `.get_config()` of {}. All parameters should be set to "
-                "ensure a perfect copy of the keras object can be obtained when "
-                "serialized.".format(parameter_name, class_.__name__)
+                f"The constructor parameter {parameter_name} is not present in the config dict obtained with `.get_config()` of {class_.__name__}. All parameters should be set to ensure a perfect copy of the keras object can be obtained when serialized."
             )
 
 

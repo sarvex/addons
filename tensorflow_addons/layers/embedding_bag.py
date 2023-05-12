@@ -108,8 +108,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
         super(EmbeddingBag, self).__init__(**kwargs)
         if input_dim <= 0 or output_dim <= 0:
             raise ValueError(
-                "Both `input_dim` and `output_dim` should be positive, "
-                "found input_dim {} and output_dim {}".format(input_dim, output_dim)
+                f"Both `input_dim` and `output_dim` should be positive, found input_dim {input_dim} and output_dim {output_dim}"
             )
         self.input_dim = input_dim
         self.output_dim = output_dim

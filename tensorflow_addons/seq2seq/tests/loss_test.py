@@ -87,11 +87,11 @@ def test_sequence_loss(average_across_timesteps, average_across_batch, zero_weig
         expected = np.zeros(batch_size)
     elif not average_across_timesteps and not average_across_batch and zero_weights:
         expected = np.zeros((batch_size, sequence_length))
-    elif average_across_timesteps and average_across_batch and not zero_weights:
+    elif average_across_timesteps and average_across_batch:
         expected = expected_loss
-    elif not average_across_timesteps and average_across_batch and not zero_weights:
+    elif not average_across_timesteps and average_across_batch:
         expected = np.full(sequence_length, expected_loss)
-    elif average_across_timesteps and not average_across_batch and not zero_weights:
+    elif average_across_timesteps:
         expected = np.full(batch_size, expected_loss)
     else:
         expected = np.full((batch_size, sequence_length), expected_loss)
@@ -125,9 +125,9 @@ def test_sequence_loss_class(average_across_timesteps, average_across_batch):
         expected = expected_loss
     elif not average_across_timesteps and average_across_batch:
         expected = np.full(sequence_length, expected_loss)
-    elif average_across_timesteps and not average_across_batch:
+    elif average_across_timesteps:
         expected = np.full(batch_size, expected_loss)
-    elif not average_across_timesteps and not average_across_batch:
+    else:
         expected = np.full((batch_size, sequence_length), expected_loss)
 
     np.testing.assert_allclose(res, expected, atol=1e-6, rtol=1e-6)

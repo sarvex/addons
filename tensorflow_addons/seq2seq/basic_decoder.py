@@ -135,20 +135,19 @@ class BasicDecoder(decoder.BaseDecoder):
         size = tf.TensorShape(self.cell.output_size)
         if self.output_layer is None:
             return size
-        else:
-            # To use layer's compute_output_shape, we need to convert the
-            # RNNCell's output_size entries into shapes with an unknown
-            # batch size.  We then pass this through the layer's
-            # compute_output_shape and read off all but the first (batch)
-            # dimensions to get the output size of the rnn with the layer
-            # applied to the top.
-            output_shape_with_unknown_batch = tf.nest.map_structure(
-                lambda s: tf.TensorShape([None]).concatenate(s), size
-            )
-            layer_output_shape = self.output_layer.compute_output_shape(
-                output_shape_with_unknown_batch
-            )
-            return tf.nest.map_structure(lambda s: s[1:], layer_output_shape)
+        # To use layer's compute_output_shape, we need to convert the
+        # RNNCell's output_size entries into shapes with an unknown
+        # batch size.  We then pass this through the layer's
+        # compute_output_shape and read off all but the first (batch)
+        # dimensions to get the output size of the rnn with the layer
+        # applied to the top.
+        output_shape_with_unknown_batch = tf.nest.map_structure(
+            lambda s: tf.TensorShape([None]).concatenate(s), size
+        )
+        layer_output_shape = self.output_layer.compute_output_shape(
+            output_shape_with_unknown_batch
+        )
+        return tf.nest.map_structure(lambda s: s[1:], layer_output_shape)
 
     @property
     def output_size(self):

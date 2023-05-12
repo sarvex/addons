@@ -42,13 +42,11 @@ def crf_filtered_inputs(inputs: TensorLike, tag_bitmap: TensorLike) -> tf.Tensor
       filtered_inputs: A [batch_size] vector of unnormalized sequence scores.
     """
 
-    # set scores of filtered out inputs to be -inf.
-    filtered_inputs = tf.where(
+    return tf.where(
         tag_bitmap,
         inputs,
         tf.fill(tf.shape(inputs), tf.cast(float("-inf"), inputs.dtype)),
     )
-    return filtered_inputs
 
 
 def crf_sequence_score(
@@ -395,8 +393,7 @@ def viterbi_decode(score: TensorLike, transition_params: TensorLike) -> tf.Tenso
         backpointers[t] = np.argmax(v, 0)
 
     viterbi = [np.argmax(trellis[-1])]
-    for bp in reversed(backpointers[1:]):
-        viterbi.append(bp[viterbi[-1]])
+    viterbi.extend(bp[viterbi[-1]] for bp in reversed(backpointers[1:]))
     viterbi.reverse()
 
     viterbi_score = np.max(trellis[-1])
@@ -581,10 +578,7 @@ def crf_decode(
     if potentials.shape[1] is not None:
         # shape is statically know, so we just execute
         # the appropriate code path
-        if potentials.shape[1] == 1:
-            return _single_seq_fn()
-        else:
-            return _multi_seq_fn()
+        return _single_seq_fn() if potentials.shape[1] == 1 else _multi_seq_fn()
     else:
         return tf.cond(
             tf.equal(tf.shape(potentials)[1], 1), _single_seq_fn, _multi_seq_fn

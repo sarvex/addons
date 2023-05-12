@@ -48,9 +48,7 @@ def hardshrink(x: TensorLike, lower: Number = -0.5, upper: Number = 0.5) -> tf.T
     """
     if lower > upper:
         raise ValueError(
-            "The value of lower is {} and should"
-            " not be higher than the value "
-            "variable upper, which is {} .".format(lower, upper)
+            f"The value of lower is {lower} and should not be higher than the value variable upper, which is {upper} ."
         )
     x = tf.convert_to_tensor(x)
     mask_lower = x < lower

@@ -33,7 +33,7 @@ def write(line):
 
 
 def write_action_env(var_name, var):
-    write('build --action_env {}="{}"'.format(var_name, var))
+    write(f'build --action_env {var_name}="{var}"')
 
 
 def is_macos():
@@ -49,7 +49,7 @@ def is_linux():
 
 
 def is_raspi_arm():
-    return os.uname()[4] == "armv7l" or os.uname()[4] == "aarch64"
+    return os.uname()[4] in ["armv7l", "aarch64"]
 
 
 def is_linux_ppc64le():
@@ -86,10 +86,10 @@ def get_tf_shared_lib_dir():
 
     # OS Specific parsing
     if is_windows():
-        tf_shared_lib_dir = tf.sysconfig.get_compile_flags()[0][2:-7] + "python"
+        tf_shared_lib_dir = f"{tf.sysconfig.get_compile_flags()[0][2:-7]}python"
         return tf_shared_lib_dir.replace("\\", "/")
     elif is_raspi_arm():
-        return tf.sysconfig.get_compile_flags()[0][2:-7] + "python"
+        return f"{tf.sysconfig.get_compile_flags()[0][2:-7]}python"
     else:
         return tf.sysconfig.get_link_flags()[0][2:]
 
@@ -101,7 +101,7 @@ def get_shared_lib_name():
     namespec = tf.sysconfig.get_link_flags()
     if is_macos():
         # MacOS
-        return "lib" + namespec[1][2:] + ".dylib"
+        return f"lib{namespec[1][2:]}.dylib"
     elif is_windows():
         # Windows
         return "_pywrap_tensorflow_internal.lib"

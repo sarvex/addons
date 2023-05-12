@@ -56,7 +56,7 @@ def _interpolate_bilinear_with_checks(
     name: Optional[str],
 ) -> tf.Tensor:
     """Perform checks on inputs without tf.function decorator to avoid flakiness."""
-    if indexing != "ij" and indexing != "xy":
+    if indexing not in ["ij", "xy"]:
         raise ValueError("Indexing mode must be 'ij' or 'xy'")
 
     grid = tf.convert_to_tensor(grid)
@@ -114,7 +114,7 @@ def _interpolate_bilinear_impl(
         unstacked_query_points = tf.unstack(query_points, axis=2, num=2)
 
         for i, dim in enumerate(index_order):
-            with tf.name_scope("dim-" + str(dim)):
+            with tf.name_scope(f"dim-{str(dim)}"):
                 queries = unstacked_query_points[dim]
 
                 size_in_indexing_dimension = grid_shape[i + 1]
@@ -153,7 +153,7 @@ def _interpolate_bilinear_impl(
         # Then we gather. Finally, we reshape the output back. It's possible this
         # code would be made simpler by using tf.gather_nd.
         def gather(y_coords, x_coords, name):
-            with tf.name_scope("gather-" + name):
+            with tf.name_scope(f"gather-{name}"):
                 linear_coordinates = batch_offsets + y_coords * width + x_coords
                 gathered_values = tf.gather(flattened_grid, linear_coordinates)
                 return tf.reshape(gathered_values, [batch_size, num_queries, channels])

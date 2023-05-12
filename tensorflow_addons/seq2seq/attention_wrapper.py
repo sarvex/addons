@@ -129,20 +129,17 @@ class AttentionMechanism(tf.keras.layers.Layer):
         return self._memory_initialized
 
     def build(self, input_shape):
-        if not self._memory_initialized:
-            # This is for setting up the memory, which contains memory and
-            # optional memory_sequence_length. Build the memory_layer with
-            # memory shape.
-            if self.memory_layer is not None and not self.memory_layer.built:
-                if isinstance(input_shape, list):
-                    self.memory_layer.build(input_shape[0])
-                else:
-                    self.memory_layer.build(input_shape)
-        else:
+        if self._memory_initialized:
             # The input_shape should be query.shape and state.shape. Use the
             # query to init the query layer.
             if self.query_layer is not None and not self.query_layer.built:
                 self.query_layer.build(input_shape[0])
+
+        elif self.memory_layer is not None and not self.memory_layer.built:
+            if isinstance(input_shape, list):
+                self.memory_layer.build(input_shape[0])
+            else:
+                self.memory_layer.build(input_shape)
 
     def __call__(self, inputs, **kwargs):
         """Preprocess the inputs before calling `base_layer.__call__()`.
@@ -217,10 +214,9 @@ class AttentionMechanism(tf.keras.layers.Layer):
                     )
                 memory = inputs[0]
                 memory_sequence_length = inputs[1] if len(inputs) == 2 else None
-                memory_mask = mask
             else:
                 memory, memory_sequence_length = inputs, None
-                memory_mask = mask
+            memory_mask = mask
             self.setup_memory(memory, memory_sequence_length, memory_mask)
             # We force the self.built to false here since only memory is,
             # initialized but the real query/state has not been call() yet. The
@@ -337,12 +333,12 @@ class AttentionMechanism(tf.keras.layers.Layer):
             "softmax": tf.nn.softmax,
             "hardmax": hardmax,
         }
-        if func_name not in valid_probability_fns.keys():
+        if func_name in valid_probability_fns:
+            return valid_probability_fns[func_name]
+        else:
             raise ValueError(
-                "Invalid probability function: %s, options are %s"
-                % (func_name, valid_probability_fns.keys())
+                f"Invalid probability function: {func_name}, options are {valid_probability_fns.keys()}"
             )
-        return valid_probability_fns[func_name]
 
     @classmethod
     def deserialize_inner_layer_from_config(cls, config, custom_objects):
@@ -364,14 +360,12 @@ class AttentionMechanism(tf.keras.layers.Layer):
         # Reconstruct the query and memory layer for parent class.
         # Instead of updating the input, create a copy and use that.
         config = config.copy()
-        query_layer_config = config.pop("query_layer", None)
-        if query_layer_config:
+        if query_layer_config := config.pop("query_layer", None):
             query_layer = tf.keras.layers.deserialize(
                 query_layer_config, custom_objects=custom_objects
             )
             config["query_layer"] = query_layer
-        memory_layer_config = config.pop("memory_layer", None)
-        if memory_layer_config:
+        if memory_layer_config := config.pop("memory_layer", None):
             memory_layer = tf.keras.layers.deserialize(
                 memory_layer_config, custom_objects=custom_objects
             )
@@ -456,14 +450,11 @@ def _luong_score(query, keys, scale):
     Raises:
       ValueError: If `key` and `query` depths do not match.
     """
-    depth = query.shape[-1]
     key_units = keys.shape[-1]
+    depth = query.shape[-1]
     if depth != key_units:
         raise ValueError(
-            "Incompatible or unknown inner dimensions between query and keys. "
-            "Query (%s) has units: %s.  Keys (%s) have units: %s.  "
-            "Perhaps you need to set num_units to the keys' dimension (%s)?"
-            % (query, depth, keys, key_units, key_units)
+            f"Incompatible or unknown inner dimensions between query and keys. Query ({query}) has units: {depth}.  Keys ({keys}) have units: {key_units}.  Perhaps you need to set num_units to the keys' dimension ({key_units})?"
         )
 
     # Reshape from [batch_size, depth] to [batch_size, 1, depth]
@@ -590,7 +581,7 @@ class LuongAttention(AttentionMechanism):
         score = _luong_score(query, self.keys, self.scale_weight)
         alignments = self.probability_fn(score, state)
         next_state = alignments
-        return alignments, next_state
+        return next_state, next_state
 
     def get_config(self):
         config = {
@@ -644,17 +635,16 @@ def _bahdanau_score(
     """
     # Reshape from [batch_size, ...] to [batch_size, 1, ...] for broadcasting.
     processed_query = tf.expand_dims(processed_query, 1)
-    if attention_g is not None and attention_b is not None:
-        normed_v = (
-            attention_g
-            * attention_v
-            * tf.math.rsqrt(tf.reduce_sum(tf.square(attention_v)))
-        )
-        return tf.reduce_sum(
-            normed_v * tf.tanh(keys + processed_query + attention_b), [2]
-        )
-    else:
+    if attention_g is None or attention_b is None:
         return tf.reduce_sum(attention_v * tf.tanh(keys + processed_query), [2])
+    normed_v = (
+        attention_g
+        * attention_v
+        * tf.math.rsqrt(tf.reduce_sum(tf.square(attention_v)))
+    )
+    return tf.reduce_sum(
+        normed_v * tf.tanh(keys + processed_query + attention_b), [2]
+    )
 
 
 class BahdanauAttention(AttentionMechanism):
@@ -794,7 +784,7 @@ class BahdanauAttention(AttentionMechanism):
         )
         alignments = self.probability_fn(score, state)
         next_state = alignments
-        return alignments, next_state
+        return next_state, next_state
 
     def get_config(self):
         # yapf: disable
@@ -1172,7 +1162,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         score += self.attention_score_bias
         alignments = self.probability_fn(score, state)
         next_state = alignments
-        return alignments, next_state
+        return next_state, next_state
 
     def get_config(self):
 
@@ -1320,7 +1310,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
         score += self.attention_score_bias
         alignments = self.probability_fn(score, state)
         next_state = alignments
-        return alignments, next_state
+        return next_state, next_state
 
     def get_config(self):
         config = {
@@ -1724,7 +1714,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     % (len(attention_layer_sizes), len(attention_mechanisms))
                 )
             dtype = kwargs.get("dtype", None)
-            self._attention_layers = list(
+            self._attention_layers = [
                 tf.keras.layers.Dense(
                     attention_layer_size,
                     name="attention_layer",
@@ -1732,7 +1722,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     dtype=dtype,
                 )
                 for i, attention_layer_size in enumerate(attention_layer_sizes)
-            )
+            ]
         elif attention_layer is not None:
             self._attention_layers = list(
                 attention_layer
@@ -1767,7 +1757,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     final_state_tensor.shape[0] or tf.shape(final_state_tensor)[0]
                 )
                 error_message = (
-                    "When constructing AttentionWrapper %s: " % self.name
+                    f"When constructing AttentionWrapper {self.name}: "
                     + "Non-matching batch sizes between the memory "
                     "(encoder output) and initial_cell_state.  Are you using "
                     "the BeamSearchDecoder?  You may need to tile your "
@@ -1843,10 +1833,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
           or the singular element.
         """
         t = tuple(seq)
-        if self._is_multi:
-            return t
-        else:
-            return t[0]
+        return t if self._is_multi else t[0]
 
     @property
     def output_size(self):
@@ -1902,9 +1889,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         if inputs is not None:
             batch_size = tf.shape(inputs)[0]
             dtype = inputs.dtype
-        with tf.name_scope(
-            type(self).__name__ + "ZeroState"
-        ):  # pylint: disable=bad-continuation
+        with tf.name_scope(f"{type(self).__name__}ZeroState"):  # pylint: disable=bad-continuation
             if self._initial_cell_state is not None:
                 cell_state = self._initial_cell_state
             else:
@@ -1912,7 +1897,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     batch_size=batch_size, dtype=dtype
                 )
             error_message = (
-                "When calling get_initial_state of AttentionWrapper %s: " % self.name
+                f"When calling get_initial_state of AttentionWrapper {self.name}: "
                 + "Non-matching batch sizes between the memory "
                 "(encoder output) and the requested batch size. Are you using "
                 "the BeamSearchDecoder?  If so, make sure your encoder output "
@@ -1988,9 +1973,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 state = AttentionWrapperState(*state)
             except TypeError:
                 raise TypeError(
-                    "Expected state to be instance of AttentionWrapperState or "
-                    "values that can construct AttentionWrapperState. "
-                    "Received type %s instead." % type(state)
+                    f"Expected state to be instance of AttentionWrapperState or values that can construct AttentionWrapperState. Received type {type(state)} instead."
                 )
 
         # Step 1: Calculate the true inputs to the cell based on the
@@ -2003,14 +1986,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         )
 
         cell_batch_size = cell_output.shape[0] or tf.shape(cell_output)[0]
-        error_message = (
-            "When applying AttentionWrapper %s: " % self.name
-            + "Non-matching batch sizes between the memory "
-            "(encoder output) and the query (decoder output).  Are you using "
-            "the BeamSearchDecoder?  You may need to tile your memory input "
-            "via the tfa.seq2seq.tile_batch function with argument "
-            "multiple=beam_width."
-        )
+        error_message = f"When applying AttentionWrapper {self.name}: Non-matching batch sizes between the memory (encoder output) and the query (decoder output).  Are you using the BeamSearchDecoder?  You may need to tile your memory input via the tfa.seq2seq.tile_batch function with argument multiple=beam_width."
         with tf.control_dependencies(
             self._batch_size_checks(cell_batch_size, error_message)
         ):  # pylint: disable=bad-continuation
@@ -2023,10 +1999,10 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             previous_attention_state = [state.attention_state]
             previous_alignment_history = [state.alignment_history]
 
-        all_alignments = []
         all_attentions = []
         all_attention_states = []
         maybe_all_histories = []
+        all_alignments = []
         for i, attention_mechanism in enumerate(self._attention_mechanisms):
             attention, alignments, next_attention_state = self._attention_fn(
                 attention_mechanism,

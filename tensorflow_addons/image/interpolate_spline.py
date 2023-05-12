@@ -42,11 +42,7 @@ def _cross_squared_distance_matrix(x: TensorLike, y: TensorLike) -> tf.Tensor:
 
     x_y_transpose = tf.matmul(x, y, adjoint_b=True)
 
-    # squared_dists[b,i,j] = ||x_bi - y_bj||^2 =
-    # x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
-    squared_dists = x_norm_squared_tile - 2 * x_y_transpose + y_norm_squared_tile
-
-    return squared_dists
+    return x_norm_squared_tile - 2 * x_y_transpose + y_norm_squared_tile
 
 
 def _pairwise_squared_distance_matrix(x: TensorLike) -> tf.Tensor:
@@ -67,15 +63,11 @@ def _pairwise_squared_distance_matrix(x: TensorLike) -> tf.Tensor:
     x_norm_squared = tf.linalg.diag_part(x_x_transpose)
     x_norm_squared_tile = tf.expand_dims(x_norm_squared, 2)
 
-    # squared_dists[b,i,j] = ||x_bi - x_bj||^2 =
-    # = x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
-    squared_dists = (
+    return (
         x_norm_squared_tile
         - 2 * x_x_transpose
         + tf.transpose(x_norm_squared_tile, [0, 2, 1])
     )
-
-    return squared_dists
 
 
 def _solve_interpolation(

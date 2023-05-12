@@ -163,10 +163,7 @@ class MultiLabelConfusionMatrix(Metric):
                 self.true_positives,
             ]
         )
-        # reshape into 2*2 matrix
-        confusion_matrix = tf.reshape(tf.transpose(flat_confusion_matrix), [-1, 2, 2])
-
-        return confusion_matrix
+        return tf.reshape(tf.transpose(flat_confusion_matrix), [-1, 2, 2])
 
     def get_config(self):
         """Returns the serializable config of the metric."""

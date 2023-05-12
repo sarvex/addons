@@ -112,7 +112,7 @@ def _adjust_hsv_in_yiq(
         raise ValueError("input must be at least 3-D.")
     if image.shape[-1] is not None and image.shape[-1] != 3:
         raise ValueError(
-            "input must have 3 channels but instead has {}.".format(image.shape[-1])
+            f"input must have 3 channels but instead has {image.shape[-1]}."
         )
     # Construct hsv linear transformation matrix in YIQ space.
     # https://beesbuzz.biz/code/hsv_color_transforms.php

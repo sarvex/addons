@@ -21,11 +21,10 @@ from tensorflow_addons.optimizers import cyclical_learning_rate
 
 
 def _maybe_serialized(lr_decay, serialize_and_deserialize):
-    if serialize_and_deserialize:
-        serialized = lr_decay.get_config()
-        return lr_decay.from_config(serialized)
-    else:
+    if not serialize_and_deserialize:
         return lr_decay
+    serialized = lr_decay.get_config()
+    return lr_decay.from_config(serialized)
 
 
 @pytest.mark.parametrize("serialize", [True, False])
@@ -86,7 +85,6 @@ def test_exponential_cyclical_learning_rate(serialize):
     step_size = 2000
     gamma = 0.996
 
-    step = 0
     exponential_cyclical_lr = cyclical_learning_rate.ExponentialCyclicalLearningRate(
         initial_learning_rate=initial_learning_rate,
         maximal_learning_rate=maximal_learning_rate,
@@ -95,14 +93,13 @@ def test_exponential_cyclical_learning_rate(serialize):
     )
     exponential_cyclical_lr = _maybe_serialized(exponential_cyclical_lr, serialize)
 
-    for i in range(0, 8001):
+    for step, i in enumerate(range(0, 8001)):
         non_bounded_value = np.abs(i / 2000.0 - 2 * np.floor(1 + i / (2 * 2000)) + 1)
         expected = initial_learning_rate + (
             maximal_learning_rate - initial_learning_rate
         ) * np.maximum(0, (1 - non_bounded_value)) * (gamma ** i)
         computed = exponential_cyclical_lr(step).numpy()
         np.testing.assert_allclose(computed, expected, 1e-6)
-        step += 1
 
 
 @pytest.mark.parametrize("serialize", [True, False])

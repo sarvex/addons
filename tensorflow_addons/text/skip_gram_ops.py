@@ -136,19 +136,12 @@ def skip_gram_sample(
         or corpus_size is not None
     ):
         raise ValueError(
-            "vocab_freq_table is not provided, but vocab_min_count={}, "
-            "vocab_subsampling={}, or corpus_size={} is not None."
-            "These settings are useless without a vocab_freq_table.".format(
-                vocab_min_count, vocab_subsampling, corpus_size
-            )
+            f"vocab_freq_table is not provided, but vocab_min_count={vocab_min_count}, vocab_subsampling={vocab_subsampling}, or corpus_size={corpus_size} is not None.These settings are useless without a vocab_freq_table."
         )
 
     if (vocab_subsampling is None) != (corpus_size is None):
         raise ValueError(
-            "vocab_subsampling is {} while corpus_size is {} - both must be "
-            "provided in order for subsampling to work.".format(
-                vocab_subsampling, corpus_size
-            )
+            f"vocab_subsampling is {vocab_subsampling} while corpus_size is {corpus_size} - both must be provided in order for subsampling to work."
         )
 
     with tf.name_scope(name or "skip_gram_sample"):
@@ -290,14 +283,11 @@ def skip_gram_sample_with_text_vocab(
 
     if vocab_token_index < 0 or vocab_freq_index < 0:
         raise ValueError(
-            "vocab_token_index={} and vocab_freq_index={} must both be >= 0.".format(
-                vocab_token_index, vocab_freq_index
-            )
+            f"vocab_token_index={vocab_token_index} and vocab_freq_index={vocab_freq_index} must both be >= 0."
         )
     if vocab_token_index == vocab_freq_index:
         raise ValueError(
-            "vocab_token_index and vocab_freq_index should be different, "
-            "but are both {}.".format(vocab_token_index)
+            f"vocab_token_index and vocab_freq_index should be different, but are both {vocab_token_index}."
         )
 
     # Iterates through the vocab file and calculates the number of vocab terms as
@@ -310,18 +300,13 @@ def skip_gram_sample_with_text_vocab(
         for row in reader:
             if vocab_token_index >= len(row) or vocab_freq_index >= len(row):
                 raise ValueError(
-                    "Row in vocab file only has {} columns, "
-                    "so vocab_token_index={} or "
-                    "vocab_freq_index={} is out of bounds. Row content: {}".format(
-                        len(row), vocab_token_index, vocab_freq_index, row
-                    )
+                    f"Row in vocab file only has {len(row)} columns, so vocab_token_index={vocab_token_index} or vocab_freq_index={vocab_freq_index} is out of bounds. Row content: {row}"
                 )
             vocab_size += 1
             freq = vocab_freq_dtype.as_numpy_dtype(row[vocab_freq_index])
             if freq < 0:
                 raise ValueError(
-                    "Row in vocab file has negative frequency of {}. "
-                    "Row content: {}".format(freq, row)
+                    f"Row in vocab file has negative frequency of {freq}. Row content: {row}"
                 )
             # Note: tokens whose frequencies are below vocab_min_count will still
             # contribute to the total corpus size used for vocab subsampling.
@@ -331,10 +316,7 @@ def skip_gram_sample_with_text_vocab(
         corpus_size = calculated_corpus_size
     elif calculated_corpus_size - corpus_size > 1e-6:
         raise ValueError(
-            "`corpus_size`={} must be greater than or equal to the "
-            "sum of all the frequency counts ({}) of `vocab_freq_file` ({}).".format(
-                corpus_size, calculated_corpus_size, vocab_freq_file
-            )
+            f"`corpus_size`={corpus_size} must be greater than or equal to the sum of all the frequency counts ({calculated_corpus_size}) of `vocab_freq_file` ({vocab_freq_file})."
         )
 
     vocab_freq_table = tf.lookup.StaticHashTable(
@@ -383,9 +365,7 @@ def _filter_input(
 
     if not isinstance(vocab_freq_table, tf.lookup.StaticHashTable):
         raise ValueError(
-            "vocab_freq_table must be a subclass of "
-            "InitializableLookupTableBase (such as HashTable) instead of type "
-            "{}.".format(type(vocab_freq_table))
+            f"vocab_freq_table must be a subclass of InitializableLookupTableBase (such as HashTable) instead of type {type(vocab_freq_table)}."
         )
 
     with tf.name_scope("filter_vocab"):
@@ -410,9 +390,7 @@ def _filter_input(
 
     if vocab_subsampling < 0 or vocab_subsampling > 1:
         raise ValueError(
-            "Invalid vocab_subsampling={} - it should be within range [0, 1].".format(
-                vocab_subsampling
-            )
+            f"Invalid vocab_subsampling={vocab_subsampling} - it should be within range [0, 1]."
         )
 
     # Subsamples the input tokens based on vocabulary frequency and

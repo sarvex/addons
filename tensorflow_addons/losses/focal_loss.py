@@ -121,11 +121,7 @@ def sigmoid_focal_crossentropy(
     ce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
 
     # If logits are provided then convert the predictions into probabilities
-    if from_logits:
-        pred_prob = tf.sigmoid(y_pred)
-    else:
-        pred_prob = y_pred
-
+    pred_prob = tf.sigmoid(y_pred) if from_logits else y_pred
     p_t = (y_true * pred_prob) + ((1 - y_true) * (1 - pred_prob))
     alpha_factor = 1.0
     modulating_factor = 1.0

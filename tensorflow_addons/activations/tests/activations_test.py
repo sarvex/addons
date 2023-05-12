@@ -33,7 +33,7 @@ ALL_ACTIVATIONS = [
 
 @pytest.mark.parametrize("name", ALL_ACTIVATIONS)
 def test_serialization(name):
-    fn = tf.keras.activations.get("Addons>" + name)
+    fn = tf.keras.activations.get(f"Addons>{name}")
     ref_fn = getattr(activations, name)
     assert fn == ref_fn
     config = tf.keras.activations.serialize(fn)

@@ -136,7 +136,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
                     )
                 )
             except Exception as e:
-                warnings.warn("Unable to assign average slot to {} : {}".format(var, e))
+                warnings.warn(f"Unable to assign average slot to {var} : {e}")
         return tf.group(assign_ops)
 
     def get_config(self):

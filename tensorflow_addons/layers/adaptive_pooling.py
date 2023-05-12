@@ -57,25 +57,21 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
         if self.data_format == "channels_last":
             splits = tf.split(inputs, bins, axis=1)
             splits = tf.stack(splits, axis=1)
-            out_vect = self.reduce_function(splits, axis=2)
+            return self.reduce_function(splits, axis=2)
         else:
             splits = tf.split(inputs, bins, axis=2)
             splits = tf.stack(splits, axis=2)
-            out_vect = self.reduce_function(splits, axis=3)
-        return out_vect
+            return self.reduce_function(splits, axis=3)
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
-        if self.data_format == "channels_last":
-            shape = tf.TensorShape(
-                [input_shape[0], self.output_size[0], input_shape[2]]
-            )
-        else:
-            shape = tf.TensorShape(
+        return (
+            tf.TensorShape([input_shape[0], self.output_size[0], input_shape[2]])
+            if self.data_format == "channels_last"
+            else tf.TensorShape(
                 [input_shape[0], input_shape[1], self.output_size[0]]
             )
-
-        return shape
+        )
 
     def get_config(self):
         config = {
@@ -193,19 +189,18 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
             split_cols = tf.stack(split_cols, axis=1)
             split_rows = tf.split(split_cols, w_bins, axis=3)
             split_rows = tf.stack(split_rows, axis=3)
-            out_vect = self.reduce_function(split_rows, axis=[2, 4])
+            return self.reduce_function(split_rows, axis=[2, 4])
         else:
             split_cols = tf.split(inputs, h_bins, axis=2)
             split_cols = tf.stack(split_cols, axis=2)
             split_rows = tf.split(split_cols, w_bins, axis=4)
             split_rows = tf.stack(split_rows, axis=4)
-            out_vect = self.reduce_function(split_rows, axis=[3, 5])
-        return out_vect
+            return self.reduce_function(split_rows, axis=[3, 5])
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
-        if self.data_format == "channels_last":
-            shape = tf.TensorShape(
+        return (
+            tf.TensorShape(
                 [
                     input_shape[0],
                     self.output_size[0],
@@ -213,8 +208,8 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
                     input_shape[3],
                 ]
             )
-        else:
-            shape = tf.TensorShape(
+            if self.data_format == "channels_last"
+            else tf.TensorShape(
                 [
                     input_shape[0],
                     input_shape[1],
@@ -222,8 +217,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
                     self.output_size[1],
                 ]
             )
-
-        return shape
+        )
 
     def get_config(self):
         config = {
@@ -344,7 +338,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             split_rows = tf.stack(split_rows, axis=3)
             split_depth = tf.split(split_rows, d_bins, axis=5)
             split_depth = tf.stack(split_depth, axis=5)
-            out_vect = self.reduce_function(split_depth, axis=[2, 4, 6])
+            return self.reduce_function(split_depth, axis=[2, 4, 6])
         else:
             split_cols = tf.split(inputs, h_bins, axis=2)
             split_cols = tf.stack(split_cols, axis=2)
@@ -352,13 +346,12 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             split_rows = tf.stack(split_rows, axis=4)
             split_depth = tf.split(split_rows, d_bins, axis=6)
             split_depth = tf.stack(split_depth, axis=6)
-            out_vect = self.reduce_function(split_depth, axis=[3, 5, 7])
-        return out_vect
+            return self.reduce_function(split_depth, axis=[3, 5, 7])
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
-        if self.data_format == "channels_last":
-            shape = tf.TensorShape(
+        return (
+            tf.TensorShape(
                 [
                     input_shape[0],
                     self.output_size[0],
@@ -367,8 +360,8 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                     input_shape[4],
                 ]
             )
-        else:
-            shape = tf.TensorShape(
+            if self.data_format == "channels_last"
+            else tf.TensorShape(
                 [
                     input_shape[0],
                     input_shape[1],
@@ -377,8 +370,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                     self.output_size[2],
                 ]
             )
-
-        return shape
+        )
 
     def get_config(self):
         config = {

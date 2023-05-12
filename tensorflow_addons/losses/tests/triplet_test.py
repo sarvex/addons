@@ -71,9 +71,7 @@ def angular_distance_np(feature):
     # l2-normalize all features
     normed = feature / np.linalg.norm(feature, ord=2, axis=1, keepdims=True)
     cosine_similarity = normed @ normed.T
-    inverse_cos_sim = 1 - cosine_similarity
-
-    return inverse_cos_sim
+    return 1 - cosine_similarity
 
 
 def triplet_semihard_loss_np(labels, embedding, margin, dist_func):
@@ -92,18 +90,17 @@ def triplet_semihard_loss_np(labels, embedding, margin, dist_func):
                 num_positives += 1.0
 
                 pos_distance = pdist_matrix[i][j]
-                neg_distances = []
-
-                for k in range(num_data):
-                    if adjacency[i][k] == 0:
-                        neg_distances.append(pdist_matrix[i][k])
-
+                neg_distances = [
+                    pdist_matrix[i][k]
+                    for k in range(num_data)
+                    if adjacency[i][k] == 0
+                ]
                 # Sort by distance.
                 neg_distances.sort()
                 chosen_neg_distance = neg_distances[0]
 
-                for m in range(len(neg_distances)):
-                    chosen_neg_distance = neg_distances[m]
+                for neg_distance in neg_distances:
+                    chosen_neg_distance = neg_distance
                     if chosen_neg_distance > pos_distance:
                         break
 
@@ -132,7 +129,7 @@ def triplet_hard_loss_np(labels, embedding, margin, dist_func, soft=False):
                 pos_distances.append(pdist_matrix[i][j])
 
         # if there are no positive pairs, distance is 0
-        if len(pos_distances) == 0:
+        if not pos_distances:
             pos_distances.append(0)
 
         # Sort by distance.

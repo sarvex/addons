@@ -61,9 +61,10 @@ class LossFunctionWrapper(tf.keras.losses.Loss):
         return self.fn(y_true, y_pred, **self._fn_kwargs)
 
     def get_config(self):
-        config = {}
-        for k, v in iter(self._fn_kwargs.items()):
-            config[k] = tf.keras.backend.eval(v) if is_tensor_or_variable(v) else v
+        config = {
+            k: tf.keras.backend.eval(v) if is_tensor_or_variable(v) else v
+            for k, v in iter(self._fn_kwargs.items())
+        }
         base_config = super().get_config()
         return {**base_config, **config}
 
@@ -101,46 +102,24 @@ def normalize_tuple(value, n, name):
     """
     if isinstance(value, int):
         return (value,) * n
-    else:
+    try:
+        value_tuple = tuple(value)
+    except TypeError:
+        raise TypeError(
+            f"The `{name}` argument must be a tuple of {str(n)} integers. Received: {str(value)}"
+        )
+    if len(value_tuple) != n:
+        raise ValueError(
+            f"The `{name}` argument must be a tuple of {str(n)} integers. Received: {str(value)}"
+        )
+    for single_value in value_tuple:
         try:
-            value_tuple = tuple(value)
-        except TypeError:
-            raise TypeError(
-                "The `"
-                + name
-                + "` argument must be a tuple of "
-                + str(n)
-                + " integers. Received: "
-                + str(value)
-            )
-        if len(value_tuple) != n:
+            int(single_value)
+        except (ValueError, TypeError):
             raise ValueError(
-                "The `"
-                + name
-                + "` argument must be a tuple of "
-                + str(n)
-                + " integers. Received: "
-                + str(value)
+                f"The `{name}` argument must be a tuple of {str(n)} integers. Received: {str(value)} including element {str(single_value)} of type {str(type(single_value))}"
             )
-        for single_value in value_tuple:
-            try:
-                int(single_value)
-            except (ValueError, TypeError):
-                raise ValueError(
-                    "The `"
-                    + name
-                    + "` argument must be a tuple of "
-                    + str(n)
-                    + " integers. Received: "
-                    + str(value)
-                    + " "
-                    "including element "
-                    + str(single_value)
-                    + " of type"
-                    + " "
-                    + str(type(single_value))
-                )
-        return value_tuple
+    return value_tuple
 
 
 def _hasattr(obj, attr_name):

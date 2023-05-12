@@ -94,17 +94,15 @@ class DecoupledWeightDecayExtension:
     @classmethod
     def from_config(cls, config, custom_objects=None):
         # LR handling copied from optimizer_v2.OptimizerV2
-        if "learning_rate" in config:
-            if isinstance(config["learning_rate"], dict):
-                config["learning_rate"] = tf.keras.optimizers.schedules.deserialize(
-                    config["learning_rate"], custom_objects=custom_objects
-                )
+        if "learning_rate" in config and isinstance(config["learning_rate"], dict):
+            config["learning_rate"] = tf.keras.optimizers.schedules.deserialize(
+                config["learning_rate"], custom_objects=custom_objects
+            )
 
-        if "weight_decay" in config:
-            if isinstance(config["weight_decay"], dict):
-                config["weight_decay"] = tf.keras.optimizers.schedules.deserialize(
-                    config["weight_decay"], custom_objects=custom_objects
-                )
+        if "weight_decay" in config and isinstance(config["weight_decay"], dict):
+            config["weight_decay"] = tf.keras.optimizers.schedules.deserialize(
+                config["weight_decay"], custom_objects=custom_objects
+            )
 
         return cls(**config)
 
@@ -140,7 +138,7 @@ class DecoupledWeightDecayExtension:
             ValueError: If some of the variables are not `Variable` objects.
         """
         self._decay_var_list = (
-            set([v.ref() for v in decay_var_list]) if decay_var_list else False
+            {v.ref() for v in decay_var_list} if decay_var_list else False
         )
         return super().minimize(
             loss, var_list=var_list, grad_loss=grad_loss, name=name, tape=tape
@@ -168,7 +166,7 @@ class DecoupledWeightDecayExtension:
             ValueError: If none of the variables have gradients.
         """
         self._decay_var_list = (
-            set([v.ref() for v in decay_var_list]) if decay_var_list else False
+            {v.ref() for v in decay_var_list} if decay_var_list else False
         )
         return super().apply_gradients(grads_and_vars, name=name, **kwargs)
 

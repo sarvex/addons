@@ -59,25 +59,20 @@ class Maxout(tf.keras.layers.Layer):
         num_channels = shape[self.axis]
         if not isinstance(num_channels, tf.Tensor) and num_channels % self.num_units:
             raise ValueError(
-                "number of features({}) is not "
-                "a multiple of num_units({})".format(num_channels, self.num_units)
+                f"number of features({num_channels}) is not a multiple of num_units({self.num_units})"
             )
 
-        if self.axis < 0:
-            axis = self.axis + len(shape)
-        else:
-            axis = self.axis
-        assert axis >= 0, "Find invalid axis: {}".format(self.axis)
+        axis = self.axis + len(shape) if self.axis < 0 else self.axis
+        assert axis >= 0, f"Find invalid axis: {self.axis}"
 
         expand_shape = shape[:]
         expand_shape[axis] = self.num_units
         k = num_channels // self.num_units
         expand_shape.insert(axis, k)
 
-        outputs = tf.math.reduce_max(
+        return tf.math.reduce_max(
             tf.reshape(inputs, expand_shape), axis, keepdims=False
         )
-        return outputs
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()

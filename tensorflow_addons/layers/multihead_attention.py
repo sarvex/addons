@@ -249,10 +249,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         if self.projection_bias is not None:
             output += self.projection_bias
 
-        if self.return_attn_coef:
-            return output, attn_coef
-        else:
-            return output
+        return (output, attn_coef) if self.return_attn_coef else output
 
     def compute_output_shape(self, input_shape):
         num_value_features = (

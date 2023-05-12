@@ -40,9 +40,10 @@ def lifted_struct_loss(
     Returns:
       lifted_loss: float scalar with dtype of embeddings.
     """
-    convert_to_float32 = (
-        embeddings.dtype == tf.dtypes.float16 or embeddings.dtype == tf.dtypes.bfloat16
-    )
+    convert_to_float32 = embeddings.dtype in [
+        tf.dtypes.float16,
+        tf.dtypes.bfloat16,
+    ]
     precise_embeddings = (
         tf.cast(embeddings, tf.dtypes.float32) if convert_to_float32 else embeddings
     )

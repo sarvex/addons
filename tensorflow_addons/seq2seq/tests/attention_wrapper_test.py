@@ -185,6 +185,9 @@ def test_masking():
 
 @pytest.mark.parametrize("attention_cls", attention_classes)
 def test_memory_re_setup(attention_cls):
+
+
+
     class MyModel(tf.keras.models.Model):
         def __init__(self, vocab, embedding_dim, memory_size, units):
             super().__init__()
@@ -201,8 +204,8 @@ def test_memory_re_setup(attention_cls):
             # we call the attention mechanism twice.
             self.attn_mch(enc_output, mask=mask, setup_memory=True)
             self.attn_mch(enc_output, mask=mask, setup_memory=True)
-            score = self.attn_mch([query, state])
-            return score
+            return self.attn_mch([query, state])
+
 
     vocab = 20
     embedding_dim = 6
@@ -240,7 +243,7 @@ def get_result_summary(x):
 
 
 def assert_allclose_or_equal(x, y, **kwargs):
-    if isinstance(x, np.ndarray) or isinstance(x, float):
+    if isinstance(x, (np.ndarray, float)):
         np.testing.assert_allclose(x, y, atol=1e-3, **kwargs)
     else:
         assert x == y

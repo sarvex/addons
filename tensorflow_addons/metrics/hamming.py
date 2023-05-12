@@ -46,8 +46,7 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     """
     result = tf.not_equal(actuals, predictions)
     not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
-    ham_distance = tf.math.divide_no_nan(not_eq, len(result))
-    return ham_distance
+    return tf.math.divide_no_nan(not_eq, len(result))
 
 
 def hamming_loss_fn(

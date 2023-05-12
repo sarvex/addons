@@ -27,10 +27,9 @@ def _poincare_normalize(x, dim, epsilon=1e-5):
         norm = np.linalg.norm(x, axis=tuple(dim))
         for d in dim:
             norm = np.expand_dims(norm, d)
-        norm_x = ((1.0 - epsilon) * x) / norm
     else:
         norm = np.expand_dims(np.apply_along_axis(np.linalg.norm, dim, x), dim)
-        norm_x = ((1.0 - epsilon) * x) / norm
+    norm_x = ((1.0 - epsilon) * x) / norm
     return np.where(norm > 1.0 - epsilon, norm_x, x)
 
 

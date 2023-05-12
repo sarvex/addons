@@ -34,13 +34,13 @@ def test_step_with_training_helper_output_layer(cell_class, use_output_layer):
     max_time = 8
     input_depth = 7
     cell_depth = 10
-    output_layer_depth = 3
-
     inputs = np.random.randn(batch_size, max_time, input_depth).astype(np.float32)
     input_t = tf.constant(inputs)
     cell = cell_class(cell_depth)
     sampler = sampler_py.TrainingSampler(time_major=False)
     if use_output_layer:
+        output_layer_depth = 3
+
         output_layer = tf.keras.layers.Dense(output_layer_depth, use_bias=False)
         expected_output_depth = output_layer_depth
     else:

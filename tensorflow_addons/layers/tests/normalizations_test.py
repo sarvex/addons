@@ -122,12 +122,10 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
     outputs = model.predict(inputs, steps=1)
     assert not np.isnan(outputs).any()
 
-    is_instance_norm = False
     # Create shapes
     if groups == -1:
         groups = input_shape[axis]
-    if (input_shape[axis] // groups) == 1:
-        is_instance_norm = True
+    is_instance_norm = input_shape[axis] // groups == 1
     np_inputs = inputs
     reshaped_dims = list(np_inputs.shape)
     if not is_instance_norm:

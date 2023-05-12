@@ -360,8 +360,7 @@ def test_beam_step():
         np.asanyarray([[False, False, False], [False, False, False]]),
     )
 
-    expected_log_probs = []
-    expected_log_probs.append(state_.log_probs[0].numpy())
+    expected_log_probs = [state_.log_probs[0].numpy()]
     expected_log_probs.append(state_.log_probs[1].numpy())
     expected_log_probs[0][0] += log_probs_[0, 1, 3]
     expected_log_probs[0][1] += log_probs_[0, 0, 3]
@@ -440,8 +439,7 @@ def test_step_with_eos():
         np.asanyarray([[True, False, False], [False, True, False]]),
     )
 
-    expected_log_probs = []
-    expected_log_probs.append(state_.log_probs[0].numpy())
+    expected_log_probs = [state_.log_probs[0].numpy()]
     expected_log_probs.append(state_.log_probs[1].numpy())
     expected_log_probs[0][1] += log_probs_[0, 0, 3]
     expected_log_probs[0][2] += log_probs_[0, 0, 2]
@@ -632,9 +630,7 @@ def test_beam_search_decoder(
     )
 
     def _t(shape):
-        if time_major:
-            return (shape[1], shape[0]) + shape[2:]
-        return shape
+        return (shape[1], shape[0]) + shape[2:] if time_major else shape
 
     assert isinstance(final_outputs, beam_search_decoder.FinalBeamSearchDecoderOutput)
     assert isinstance(final_state, beam_search_decoder.BeamSearchDecoderState)

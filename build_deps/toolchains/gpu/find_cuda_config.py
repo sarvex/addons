@@ -121,9 +121,8 @@ def _at_least_version(actual_version, required_version):
 def _get_header_version(path, name):
     """Returns preprocessor defines in C header file."""
     for line in io.open(path, "r", encoding="utf-8").readlines():
-        match = re.match(r"#define %s +(\d+)" % name, line)
-        if match:
-            return match.group(1)
+        if match := re.match(r"#define %s +(\d+)" % name, line):
+            return match[1]
     return ""
 
 
@@ -154,7 +153,7 @@ def _get_default_cuda_paths(cuda_version):
     if not cuda_version:
         cuda_version = "*"
     elif "." not in cuda_version:
-        cuda_version = cuda_version + ".*"
+        cuda_version = f"{cuda_version}.*"
 
     if _is_windows():
         return [
@@ -165,7 +164,7 @@ def _get_default_cuda_paths(cuda_version):
             )
         ]
     return [
-        "/usr/local/cuda-%s" % cuda_version,
+        f"/usr/local/cuda-{cuda_version}",
         "/usr/local/cuda",
         "/usr",
         "/usr/local/cudnn",
@@ -218,14 +217,14 @@ def _find_file(base_paths, relative_paths, filepattern):
 def _find_library(base_paths, library_name, required_version):
     """Returns first valid path to the requested library."""
     if _is_windows():
-        filepattern = library_name + ".lib"
+        filepattern = f"{library_name}.lib"
     elif _is_macos():
-        filepattern = "%s*.dylib" % (
-            ".".join(["lib" + library_name] + required_version.split(".")[:1])
-        )
+        filepattern = f'{".".join([f"lib{library_name}"] + required_version.split(".")[:1])}*.dylib'
     else:
         filepattern = (
-            ".".join(["lib" + library_name, "so"] + required_version.split(".")[:1])
+            ".".join(
+                [f"lib{library_name}", "so"] + required_version.split(".")[:1]
+            )
             + "*"
         )
     return _find_file(base_paths, _library_paths(), filepattern)
@@ -246,7 +245,7 @@ def _find_versioned_file(
     raise _not_found_error(
         base_paths,
         relative_paths,
-        ", ".join(filepatterns) + " matching version '%s'" % required_version,
+        ", ".join(filepatterns) + f" matching version '{required_version}'",
     )
 
 
@@ -276,7 +275,7 @@ def _find_cuda_config(base_paths, required_version):
         for line in subprocess.check_output([path, "--version"]).splitlines():
             match = re.match(pattern, line.decode("ascii"))
             if match:
-                return match.group(1)
+                return match[1]
         return None
 
     nvcc_name = "nvcc.exe" if _is_windows() else "nvcc"
@@ -546,9 +545,7 @@ def _find_tensorrt_config(base_paths, required_version):
         # `version` is a generator object, so we convert it to a list before using
         # it (muitiple times below).
         version = list(version)
-        if not all(version):
-            return None  # Versions not found, make _matches_version returns False.
-        return ".".join(version)
+        return None if not all(version) else ".".join(version)
 
     try:
         header_path, header_version = _find_header(
@@ -572,9 +569,7 @@ def _find_tensorrt_config(base_paths, required_version):
 
 def _list_from_env(env_name, default=[]):
     """Returns comma-separated list from environment variable."""
-    if env_name in os.environ:
-        return os.environ[env_name].split(",")
-    return default
+    return os.environ[env_name].split(",") if env_name in os.environ else default
 
 
 def _get_legacy_path(env_name, default=[]):
@@ -585,9 +580,10 @@ def _get_legacy_path(env_name, default=[]):
     paths. Detect those and return '/usr', otherwise forward to _list_from_env().
     """
     if env_name in os.environ:
-        match = re.match(r"^(/[^/ ]*)+/lib/\w+-linux-gnu/?$", os.environ[env_name])
-        if match:
-            return [match.group(1)]
+        if match := re.match(
+            r"^(/[^/ ]*)+/lib/\w+-linux-gnu/?$", os.environ[env_name]
+        ):
+            return [match[1]]
     return _list_from_env(env_name, default)
 
 
@@ -609,7 +605,7 @@ def find_cuda_config():
     result = {}
     if "cuda" in libraries:
         cuda_paths = _list_from_env("CUDA_TOOLKIT_PATH", base_paths)
-        result.update(_find_cuda_config(cuda_paths, cuda_version))
+        result |= _find_cuda_config(cuda_paths, cuda_version)
 
         cuda_version = result["cuda_version"]
         cublas_paths = base_paths
@@ -672,7 +668,7 @@ def find_cuda_config():
 def main():
     try:
         for key, value in sorted(find_cuda_config().items()):
-            print("%s: %s" % (key, value))
+            print(f"{key}: {value}")
     except ConfigError as e:
         sys.stderr.write(str(e))
         sys.exit(1)
